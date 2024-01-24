@@ -44,6 +44,8 @@
     "@types/mongoose": "^5.11.97",
     "@types/multer": "^1.4.8",
     "@types/nodemon": "^1.19.2",
-    "pdf-to-png-converter": "^3.1.0"
+    "pdf-to-png-converter": "^3.1.0",
+    "ts-node": "^10.9.2",
+    "typescript": "^5.3.3"
   }
 }
