@@ -56,7 +56,7 @@ export class CategoriesService {
             const totalCategories = await this.model.countDocuments().merge(query);
             const totalPages = Math.ceil(totalCategories / perPage);
             // return data 
-            return successResponse(res, { categories, totalPages }, 'List Categories');
+            return successResponse(res, { categories, totalPages, totalCategories }, 'List Categories');
         } catch (error: any) {
             return errorResponse(res, error.message, 'Error listing categories');
         }
