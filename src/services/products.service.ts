@@ -103,12 +103,16 @@ export class ProductsService {
             // do query
             const products = await this.model.find(query, 'id name default_image')
             .skip(skip)
-            .limit(perPage);
+            .limit(perPage)
+            .populate({
+                path: 'categories',
+                select: 'name'  // Solo obtén el campo 'name' de las categorías
+            });
             // Count model by user
             const totalProducts = await this.model.countDocuments().merge(query);
             const totalPages = Math.ceil(totalProducts / perPage);
             // return data
-            return successResponse(res, { products, totalPages }, 'List Categories');
+            return successResponse(res, { products, totalPages, totalProducts }, 'List Categories');
         } catch (error: any) {
             throw error;
         }
