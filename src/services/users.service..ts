@@ -96,7 +96,7 @@ export class UserService {
             const totalPages = Math.ceil(totalUsers / perPage);
 
             // Retornar datos
-            return successResponse(res, { users: data, totalPages }, 'List users');
+            return successResponse(res, { users: data, totalPages, totalUsers }, 'List users');
         } catch (error) {
           return errorResponse(res, error, 'Error listing users.');
         }
