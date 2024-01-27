@@ -106,6 +106,7 @@ export class CategoriesService {
                 // save new image
                 const path = await this.utils.getPath('categories');
                 category.image = `/${path}/${file.filename}`;
+                await category.save();
             }
             return successResponse(res, category, 'Category updated success');
         } catch (error: any) {
