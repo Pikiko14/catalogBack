@@ -63,13 +63,13 @@ const ProductCreateValidator = [
             }
             prices.forEach((price: any, index: number) => {
                 if (price.value === 0) {
-                    throw new Error(`Price value not can be 0 at index ${index + 1}`);
+                    throw new Error(`Price value not can be 0 at price ${index + 1}`);
                 }
                 const validationResult = body(`prices[${index}]`)
                 .isObject()
                 .run(req);
                 if (Array.isArray(validationResult)) {
-                    throw new Error(`Invalid price object at index ${index}`);
+                    throw new Error(`Invalid price object at price ${index}`);
                 }
             });
           return true;
@@ -260,7 +260,7 @@ const ProductUpdateValidator = [
             }
             prices.forEach((price: any, index: number) => {
                 if (price.value === 0) {
-                    throw new Error(`Price value not can be 0 at index ${index + 1}`);
+                    throw new Error(`Price value not can be 0 at price ${index + 1}`);
                 }
                 const validationResult = body(`prices[${index}]`)
                 .isObject()
