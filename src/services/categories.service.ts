@@ -100,7 +100,9 @@ export class CategoriesService {
                 }
             );
             if (file) {
-                await this.utils.deleteItemFromStorage(category.image);
+                if (category.image) {
+                    await this.utils.deleteItemFromStorage(category.image);
+                }
                 // save new image
                 const path = await this.utils.getPath('categories');
                 category.image = `/${path}/${file.filename}`;
