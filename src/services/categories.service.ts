@@ -1,4 +1,5 @@
 import { Response } from "express";
+import { Utils } from "../utils/utils";
 import { User } from "../interfaces/users.interface";
 import CategoriesModel from "../models/categories.model";
 import { CategoryInterface } from "../interfaces/categories.interface";
@@ -6,8 +7,10 @@ import { errorResponse, successResponse } from "../utils/api.responser";
 
 export class CategoriesService {
     model: any = CategoriesModel;
+    utils: Utils;
 
     constructor () {
+        this.utils = new Utils;
     }
 
     /**
@@ -15,10 +18,15 @@ export class CategoriesService {
      * @param { Response } res
      * @param { any } params
      */
-    createCategories = async (res: Response, { body, user }:{body: CategoryInterface, user: User}): Promise<CategoryInterface | void> => {
+    createCategories = async (res: Response, { body, user, file }:{ body: CategoryInterface, user: User, file: any }): Promise<CategoryInterface | void> => {
         try {
             body.user_id = user.parent || user._id;
-            const category: CategoryInterface = await this.model.create(body);
+            const category = await this.model.create(body);
+            if (file) {
+                const path = await this.utils.getPath('categories');
+                category.image = `/${path}/${file.filename}`;
+            }
+            await category.save();
             return successResponse(res, category, 'Category created success');
         } catch (error: any) {
             return errorResponse(res, error, 'Error create categories');
@@ -80,7 +88,7 @@ export class CategoriesService {
      * @param { CategoryInterface } body
      * @returns 
      */
-    updateCategories = async (res: Response, id: string, body: CategoryInterface) => {
+    updateCategories = async (res: Response, id: string, body: CategoryInterface, file: any) => {
         try {
             const category = await this.model.findOneAndUpdate(
                 {
@@ -91,6 +99,12 @@ export class CategoriesService {
                     new: true
                 }
             );
+            if (file) {
+                await this.utils.deleteItemFromStorage(category.image);
+                // save new image
+                const path = await this.utils.getPath('categories');
+                category.image = `/${path}/${file.filename}`;
+            }
             return successResponse(res, category, 'Category updated success');
         } catch (error: any) {
             return errorResponse(res, error.message, 'Error updating categories');
@@ -107,6 +121,9 @@ export class CategoriesService {
             const category = await this.model.findOneAndDelete({
                 _id: id
             });
+            if (category.image) {
+                await this.utils.deleteItemFromStorage(category.image);
+            }
             return successResponse(res, category, "Categories deleted success");
         } catch (error: any) {
             return errorResponse(res, error.message, 'Error deleting categories');

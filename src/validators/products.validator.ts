@@ -198,11 +198,11 @@ const ProductCreateValidator = [
             return true;
         }),
     (req: Request, res: Response, next: NextFunction) => {
-    const errors = validationResult(req);
-    if (!errors.isEmpty() && req.files) {
-        deleteFiles(req.files);
-    }
-    handlerValidator(req, res, next);
+        const errors = validationResult(req);
+        if (!errors.isEmpty() && req.files) {
+            deleteFiles(req.files);
+        }
+        handlerValidator(req, res, next);
     },
 ];
 
