@@ -257,7 +257,7 @@ export class ProductsService {
      */
     public async setDefaultImg(res: Response, productId: string, media: MediaProductInterface) {
         try {
-            const product = await this.model.findOneAndUpdate(
+            let product = await this.model.findOneAndUpdate(
                 { _id: productId },
                 {
                     default_image: media,
@@ -269,6 +269,8 @@ export class ProductsService {
             if (!product) {
                 return notFountResponse(res, { productId }, 'Product not found');
             }
+            // get fresh data
+            product = await this.getProductById(product._id, product.user_id);
             // return data
             return successResponse(res, product, 'Product default image change success.');
         } catch (error) {
