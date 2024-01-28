@@ -21,8 +21,9 @@ export class CategoriesController {
     createCategories = async (req: RequestExt, res: Response) => {
         try {
             const { user } = req;
+            const file: any = req.file;
             const body: CategoryInterface | any = matchedData(req);
-            await this.service.createCategories(res, { user, body });
+            await this.service.createCategories(res, { user, body, file });
         } catch (error: any) {
             return errorResponse(res, error.message, 'Error create categories');
         }
@@ -53,8 +54,9 @@ export class CategoriesController {
      updateCategories = async (req: RequestExt, res: Response) => {
         try {
             const { id } = req.params;
+            const file: any = req.file;
             const body: CategoryInterface = matchedData(req) as any;
-            await this.service.updateCategories(res, id, body);
+            await this.service.updateCategories(res, id, body, file);
         } catch (error: any) {
             return errorResponse(res, error.message, 'Error create categories');
         }

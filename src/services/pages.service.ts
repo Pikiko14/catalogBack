@@ -208,6 +208,7 @@ export class PagesService {
      */
     setButtonOnpage = async (res: Response, body: any, pageId: string) => {
         try {
+            // save page
             const page = await this.model.findOneAndUpdate(
                 {
                     _id: pageId
@@ -219,7 +220,7 @@ export class PagesService {
                     new: true
                 }
             );
-            return successResponse(res, page, 'Buttons set success');
+            return successResponse(res, page, 'buttons configured correctly');
         } catch (error) {
             return error;
         }

@@ -7,6 +7,11 @@ const CategoriesSchema = new Schema<CategoryInterface>(
             type: String,
             nullable: false,
         },
+        image: {
+            type: String,
+            nullable: true,
+            default: ''
+        },
         user_id: {
             type: mongoose.Schema.Types.ObjectId,
             ref: 'users',
