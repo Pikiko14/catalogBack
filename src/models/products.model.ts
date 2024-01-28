@@ -1,3 +1,4 @@
+import { ObjectId } from 'mongodb';
 import { Utils } from "../utils/utils";
 import mongoose, { Schema, model } from "mongoose";
 import { ProductInterface, ProviderMediaEnum, TypeMediaEnum } from "../interfaces/products.interface";
@@ -176,6 +177,34 @@ ProductsSchema.pre('findOneAndDelete', { document: true, query: true }, async fu
         next(error);
     }
 });
+
+ProductsSchema.statics.getTopAddedToCartByUser = async function(user_id) {
+    try {
+        const result = await this.aggregate([
+            { $match: { user_id: new ObjectId(user_id)} }, // Filtra por user_id
+            { $sort: { count_add_to_cart: -1 } },
+            { $limit: 5 },
+            { $project: { name: 1, count_add_to_cart: 1 } }
+        ]);
+        return result;
+    } catch (error) {
+        throw error;
+    }
+};
+
+ProductsSchema.statics.getTopSoldByUser = async function(user_id) {
+    try {
+        const result = await this.aggregate([
+            { $match: { user_id: new ObjectId(user_id) } }, // Filtra por user_id
+            { $sort: { count_order_finish: -1 } },
+            { $limit: 5 },
+            { $project: { name: 1, count_order_finish: 1 } }
+        ]);
+        return result;
+    } catch (error) {
+        throw error;
+    }
+};
 
 // compile model
 const ProductModel = model('products', ProductsSchema);

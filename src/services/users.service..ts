@@ -124,6 +124,11 @@ export class UserService {
      */
     updateUsers = async (res: Response, userId: string, user: User): Promise<User[] | ResponseInterface | void> => {
         try {
+            // encrypt password
+            if (user.password) {
+                user.password = await this.utils.encryptPassword(user.password);
+            }
+            // update data
             const userUpdate = await this.model.findOneAndUpdate(
                 {_id: userId},
                 user,
@@ -131,8 +136,10 @@ export class UserService {
                     new: true,
                 }
             );
+            // return response si user dont found
             if (!userUpdate)
                 return notFountResponse(res, {}, 'User don´t exist in our records')
+            // return data
             return successResponse(res, userUpdate, "User updated correctly");
         } catch (error) {
             return errorResponse(res, error, 'Error updating user.');
