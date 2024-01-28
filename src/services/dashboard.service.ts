@@ -30,6 +30,8 @@ export class DashboardService {
      */
     listMetrics = async (res: Response, userId: string) => {
         try {
+            // clear data
+            this.clearData();
             // get data more add
             await this.loadMetricsMoreAddCart(userId);
             await this.loadMetricsMoreSellers(userId);
@@ -75,5 +77,15 @@ export class DashboardService {
                 this.moreSellers.data.push(moreAdd.count_order_finish);
             }
         }
+    }
+
+    /**
+     * Clear data
+     */
+    public clearData() {
+        this.moreAddCart.data = [];
+        this.moreAddCart.labels = [];
+        this.moreSellers.data = [];
+        this.moreSellers.labels = []
     }
 }
