@@ -220,7 +220,7 @@ export class PagesService {
                     new: true
                 }
             );
-            return successResponse(res, page, 'Buttons configuration success');
+            return successResponse(res, page, 'buttons configured correctly');
         } catch (error) {
             return error;
         }
