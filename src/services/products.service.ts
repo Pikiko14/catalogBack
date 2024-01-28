@@ -33,7 +33,11 @@ export class ProductsService {
      * @return { ProductInterface | void }
      */
     public async getProductById (productId: string, userId: string): Promise<ProductInterface | any> {
-        const product = await this.model.findOne({ _id: productId, user_id: userId });
+        const product = await this.model.findOne({ _id: productId, user_id: userId }, 'id name default_image reference')
+        .populate({
+            path: 'categories',
+            select: 'name'
+        });
         if (product) {
             return product;
         }
@@ -50,7 +54,7 @@ export class ProductsService {
         try {
             // save product
             body.user_id = userId;
-            const product = await this.model.create(body);
+            let product = await this.model.create(body);
             // set images to products
             const path = await this.utils.getPath('products');
             let i = 0;
@@ -67,6 +71,9 @@ export class ProductsService {
                 i++;
             }
             await product.save();
+            // get fresh data
+            product = await this.getProductById(product._id, product.user_id);
+            // return data
             return successResponse(res, product, 'Product created success');
         } catch (error: any) {
             throw error;
@@ -101,14 +108,18 @@ export class ProductsService {
                 };
             }
             // do query
-            const products = await this.model.find(query, 'id name default_image')
+            const products = await this.model.find(query, 'id name default_image reference')
             .skip(skip)
-            .limit(perPage);
+            .limit(perPage)
+            .populate({
+                path: 'categories',
+                select: 'name'  // Solo obtén el campo 'name' de las categorías
+            });
             // Count model by user
             const totalProducts = await this.model.countDocuments().merge(query);
             const totalPages = Math.ceil(totalProducts / perPage);
             // return data
-            return successResponse(res, { products, totalPages }, 'List Categories');
+            return successResponse(res, { products, totalPages, totalProducts }, 'List Categories');
         } catch (error: any) {
             throw error;
         }
@@ -170,7 +181,7 @@ export class ProductsService {
      */
     public async updateProducts(res: Response, body: ProductInterface, userId: string, files: any, productId: string): Promise<void> {
         try {
-            const product = await this.model.findOneAndUpdate(
+            let product = await this.model.findOneAndUpdate(
                 { _id: productId, user_id: userId },
                 body,
                 { new: true }
@@ -190,6 +201,9 @@ export class ProductsService {
             }
             // save media data
             await product.save();
+            // get fresh data
+            product = await this.getProductById(product._id, product.user_id);
+            // return data
             return successResponse(res, product, 'Product updated successfully');
         } catch (error: any) {
             throw error;
@@ -243,7 +257,7 @@ export class ProductsService {
      */
     public async setDefaultImg(res: Response, productId: string, media: MediaProductInterface) {
         try {
-            const product = await this.model.findOneAndUpdate(
+            let product = await this.model.findOneAndUpdate(
                 { _id: productId },
                 {
                     default_image: media,
@@ -255,6 +269,8 @@ export class ProductsService {
             if (!product) {
                 return notFountResponse(res, { productId }, 'Product not found');
             }
+            // get fresh data
+            product = await this.getProductById(product._id, product.user_id);
             // return data
             return successResponse(res, product, 'Product default image change success.');
         } catch (error) {

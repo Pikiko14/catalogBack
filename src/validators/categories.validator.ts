@@ -1,7 +1,11 @@
-import { check } from 'express-validator';
+import { check, validationResult } from 'express-validator';
 import { Request, Response, NextFunction } from 'express';
 import { handlerValidator } from '../utils/handler.validator';
 import { CategoriesService } from '../services/categories.service';
+import { Utils } from '../utils/utils';
+
+// instances
+const utils = new Utils();
 
 // do validator
 const categoriesService = new CategoriesService();
@@ -13,9 +17,16 @@ const CategoriesCreationValidator = [
         .withMessage('Category name must be string')
         .notEmpty()
         .withMessage('Category name is required')
-        .isLength({ min: 3, max: 60 })
+        .isLength({ min: 3, max: 90 })
         .withMessage('Category name must have a minimum of 5 characters and a maximum of 60.'),
-    (req: Request, res: Response, next: NextFunction) => handlerValidator(req, res, next),
+    (req: Request, res: Response, next: NextFunction) => {
+        const errors = validationResult(req);
+        if (!errors.isEmpty() && req.file) {
+            console.log(req.file);
+            utils.deleteItemFromStorage(`categories/${req.file.filename}`);
+        }
+        handlerValidator(req, res, next);
+    },
 ];
 
 // id categories validator
@@ -35,7 +46,14 @@ const CategoryIdValidator = [
             throw new Error('Category id dont´t exist in our records');
         }
     }),
-    (req: Request, res: Response, next: NextFunction) => handlerValidator(req, res, next),
+    (req: Request, res: Response, next: NextFunction) => {
+        const errors = validationResult(req);
+        if (!errors.isEmpty() && req.file) {
+            console.log(req.file);
+            utils.deleteItemFromStorage(`categories/${req.file.filename}`);
+        }
+        handlerValidator(req, res, next);
+    },
 ];
 
 export {

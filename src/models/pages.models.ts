@@ -32,7 +32,19 @@ const PagesSchema = new Schema<PagesInterface>(
                 type: Number,
                 default: 1,
             },
-            buttons: [],
+            buttons: [{
+                x: {
+                    type: String,
+                },
+                y: {
+                    type: String,
+                    default: ''
+                },
+                product: {
+                    type: mongoose.Schema.Types.ObjectId,
+                    ref: 'products'
+                }
+            }],
         }]
     },
     {

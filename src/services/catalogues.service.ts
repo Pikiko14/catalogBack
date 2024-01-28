@@ -51,10 +51,10 @@ export class CatalogueService {
             // do query
             const catalogues: Catalogue[] = await this.model.find(query).skip(skip).limit(perPage);
             // Count model by user
-            const totalUsers = await this.model.countDocuments().merge(query);
-            const totalPages = Math.ceil(totalUsers / perPage);
+            const totalCatalogs = await this.model.countDocuments().merge(query);
+            const totalPages = Math.ceil(totalCatalogs / perPage);
             // return data 
-            return successResponse(res, {catalogues, totalPages }, "List catalogues."); // return data
+            return successResponse(res, {catalogues, totalPages, totalCatalogs }, "List catalogues."); // return data
         } catch (error) {
             return errorResponse(res, error, 'Error listing catalogues.');
         }
