@@ -181,10 +181,17 @@ ProductsSchema.pre('findOneAndDelete', { document: true, query: true }, async fu
 ProductsSchema.statics.getTopAddedToCartByUser = async function(user_id) {
     try {
         const result = await this.aggregate([
-            { $match: { user_id: new ObjectId(user_id)} }, // Filtra por user_id
-            { $sort: { count_add_to_cart: -1 } },
-            { $limit: 5 },
-            { $project: { name: 1, count_add_to_cart: 1 } }
+            { $match: { user_id: new ObjectId(user_id)} }, // filter for user id
+            { $sort: { count_add_to_cart: -1 } }, // sort by attribute desc
+            { $limit: 5 }, // limit query
+            { 
+                $project: {
+                    name: 1, 
+                    count_add_to_cart: {
+                        $ifNull: [ "$count_add_to_cart", 0 ] // condiftion for attribute count
+                    }
+                }
+            }
         ]);
         return result;
     } catch (error) {
@@ -195,10 +202,17 @@ ProductsSchema.statics.getTopAddedToCartByUser = async function(user_id) {
 ProductsSchema.statics.getTopSoldByUser = async function(user_id) {
     try {
         const result = await this.aggregate([
-            { $match: { user_id: new ObjectId(user_id) } }, // Filtra por user_id
+            { $match: { user_id: new ObjectId(user_id) } },
             { $sort: { count_order_finish: -1 } },
             { $limit: 5 },
-            { $project: { name: 1, count_order_finish: 1 } }
+            {
+                $project: {
+                    name: 1,
+                    count_order_finish: {
+                        $ifNull: [ "$count_order_finish", 0 ] // condiftion for attribute count
+                    }
+                }
+            }
         ]);
         return result;
     } catch (error) {
