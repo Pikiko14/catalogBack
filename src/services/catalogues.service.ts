@@ -6,15 +6,18 @@ import { Catalogue } from "../interfaces/catalogues.interface";
 import { ResponseInterface } from "../interfaces/response.interface";
 import { successResponse, errorResponse, createdResponse, notFountResponse } from "../utils/api.responser";
 import mongoose, { ObjectId, mongo } from "mongoose";
+import { ProfileService } from "./profiles.service";
 
 export class CatalogueService {
     model: any = CatalogueModel;
     utils: Utils;
     userService: UserService;
+    profileService: ProfileService;
 
     constructor() {
         this.utils = new Utils();
         this.userService = new UserService();
+        this.profileService = new ProfileService();
     }
 
     /**
@@ -231,6 +234,26 @@ export class CatalogueService {
             return successResponse(res, catalog, "Catalogo state change success");
         } catch (error) {
             return errorResponse(res, error, 'Error activating catalogues');
+        }
+    }
+
+    /**
+     * Create news catalogues
+     * @param {*} res
+     * @param {ObjectId | string} catalogueId
+     */
+    doListCatalog = async (
+        res: Response,
+        catalogueId: string | ObjectId
+    ): Promise<Catalogue | ResponseInterface | void> => {
+        try {
+            // filter catalogue
+            const catalogue: Catalogue = await this.model.findOne({ _id: catalogueId });
+            const profile = await this.profileService.getProfileByUserId(catalogue.user_id as any);
+            // reutrn response
+            return createdResponse(res, { catalogue, profile }, "Catalogue information");
+        } catch (error) {
+            return errorResponse(res, error, 'Error show catalogues');
         }
     }
 }

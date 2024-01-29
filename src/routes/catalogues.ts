@@ -78,5 +78,13 @@ router.get('/activate/:id',
     controller.doActivateCatalog
 );
 
+/**
+ * Activate catalogs
+ */
+router.get('/show/:id',
+    IdCatalogueValidator,
+    controller.doListCatalog,
+);
+
 // export router
 export { router };

@@ -129,4 +129,17 @@ export class ProfileService {
             throw error;
         }
     }
+
+    /**
+     * Get profile data by id
+     * @param {string} id
+     */
+    getProfileByUserId = async(id: string): Promise<ProfileInterface | boolean> => {
+        const profile = await this.model.findOne({
+            user_id: id
+        });
+        if (profile)
+            return profile;
+        return false;
+    }
 }

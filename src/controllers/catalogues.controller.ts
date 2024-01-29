@@ -112,4 +112,18 @@ export class CatalogueController {
             return errorResponse(res, error, 'Error on activation of catalogue');
         }
     }
+
+    /**
+     * List catalog by id
+     * @param {Request} req
+     * @param {Response} res
+     */
+    doListCatalog = async (req: Request, res: Response) => {
+        try {
+            const { id } = req.params;
+            await this.service.doListCatalog(res, id);
+        } catch (error) {
+            return errorResponse(res, error, 'Error on listing catalogue');
+        }
+    }
 }
