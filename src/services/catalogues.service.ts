@@ -248,7 +248,14 @@ export class CatalogueService {
     ): Promise<Catalogue | ResponseInterface | void> => {
         try {
             // filter catalogue
-            const catalogue: Catalogue = await this.model.findOne({ _id: catalogueId });
+            const catalogue: Catalogue = await this.model.findOne({ _id: catalogueId })
+            .populate({
+                path: 'pages',
+                populate: {
+                    path: 'images.buttons.product',
+                    model: 'products',
+                },
+            });
             const profile = await this.profileService.getProfileByUserId(catalogue.user_id as any);
             // reutrn response
             return createdResponse(res, { catalogue, profile }, "Catalogue information");
