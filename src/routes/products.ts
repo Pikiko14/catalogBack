@@ -1,10 +1,10 @@
 import  { Router} from "express";
+import { upload } from "../utils/storage";
 import sessionCheck from "../middlewares/session.middleware";
+import subscriptionCheck from "../middlewares/subscription.middleware";
 import { ProductsController } from "../controllers/products.controller";
 import perMissionMiddleware from "../middlewares/permission.middleware";
-import { upload } from "../utils/storage";
 import parseBodyAttributesToJson from "../middlewares/parseBody.middleware";
-import subscriptionCheck from "../middlewares/subscription.middleware";
 import { ProductCreateValidator, ProductMediaDefaulValidator, ProductUpdateValidator } from "../validators/products.validator";
 
 // init router
@@ -80,6 +80,14 @@ router.post(
     perMissionMiddleware('update-products'),
     ProductMediaDefaulValidator,
     controller.setDefaultImg,
+);
+
+/**
+ * show product for front
+ */
+router.get(
+    '/:productId/show',
+    controller.showProductByFront,
 );
 
 // export router

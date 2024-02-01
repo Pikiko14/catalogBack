@@ -12,7 +12,17 @@ const publicDirectoryPath = path.join(__dirname, '../uploads');
 const PORT = process.env.PORT || 3001;
 const app = express();
 
-app.use(cors());
+
+// Configurar el middleware CORS
+const corsOptions = {
+  origin: [ 'http://localhost:9000', 'https://localhost:9001'],
+  methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
+  credentials: true,
+  optionsSuccessStatus: 204,
+};
+
+// app uses
+app.use(cors(corsOptions));
 app.use(express.json());
 app.use(router);
 app.use(express.static(publicDirectoryPath));

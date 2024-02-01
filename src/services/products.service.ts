@@ -277,4 +277,28 @@ export class ProductsService {
             throw error;
         }
     }
+
+    /**
+     * Delete product
+     * @param { Response } res
+     * @param { string } userId
+     * @param { string } productId
+     * @return
+     */
+    public async showProductByFront(res: Response, productId: string) {
+        try {
+            const product = await this.model.findOne({ _id: productId  })
+            .populate('categories');
+            if (!product) {
+                return errorResponse(
+                    res,
+                    { productId } ,
+                    'Product not found'
+                );
+            }
+            return successResponse(res, product, 'Product show successfully');
+        } catch (error) {
+            throw error;
+        }
+    }
 }

@@ -112,4 +112,19 @@ export class ProductsController {
             return errorResponse(res, error.message, 'Error set default image on product.');
         }
     }
+
+     /**
+     * show products
+     * @param req
+     * @param res
+     * @returns
+     */
+    showProductByFront = async (req: RequestExt, res: Response) => {
+        try {
+            const { productId } = req.params;
+            await this.service.showProductByFront(res, productId);
+        } catch (error: any) {
+            return errorResponse(res, error.message, 'Error show products');
+        }
+    }
 }
