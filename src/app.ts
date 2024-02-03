@@ -15,7 +15,7 @@ const app = express();
 
 // Configurar el middleware CORS
 const corsOptions = {
-  origin: [ 'http://localhost:9000', 'https://localhost:9000', 'https://localhost:9001'],
+  origin: [ 'http://localhost:9000', 'https://localhost:9000', 'https://localhost:9001', 'http://localhost:9001'],
   methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
   credentials: true,
   optionsSuccessStatus: 204,
