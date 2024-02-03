@@ -49,16 +49,6 @@ const updateProfileValidator = [
         .withMessage('Address must be string')
         .isLength({ min: 5, max: 90 })
         .withMessage('Address must be min 5 characters and max 90 characters'),
-    // check('website')
-    //     .optional()
-    //     .isString()
-    //     .withMessage('Website must be string')
-    //     .matches(/^(https?|ftp):\/\/[^\s/$.?#].[^\s]*$/)
-    //     .withMessage('URL must be a valid URL'),
-    check("type_slider")
-        .optional()
-        .custom(isEnum)
-        .withMessage(`Invalid enum value in characteristics methods field, available ${Object.values(TypeSlider)}.`),
     check('user_id')
         .notEmpty()
         .withMessage('User id cannot be empty.')
@@ -106,6 +96,10 @@ const validateConfigurationData = [
         .optional()
         .isLength({ min: 1, max: 1000 })
         .withMessage('Whatsapp message must be min 1 characters and max 1000 characters'),
+    check("type_slider")
+        .optional()
+        .custom(isEnum)
+        .withMessage(`Invalid enum value in characteristics methods field, available ${Object.values(TypeSlider)}.`),
     (req: Request, res: Response, next: NextFunction) => handlerValidator(req, res, next),
 ];
 
