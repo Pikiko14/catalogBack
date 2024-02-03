@@ -70,16 +70,6 @@ const updateProfileValidator = [
                 throw new Error('User id dont´t exist in our records');
             }
         }),
-    // check("brand_color")
-    //     .optional()
-    //     .isLength({ min: 0, max: 8 })
-    //     .withMessage('Brand color must be min 6 characters and max 8 characters')
-    //     .matches(/^#(?:[0-9a-fA-F]{3}){1,2}$/)
-    //     .withMessage('Brand color must be hexadecimal color string'),
-    // check("whatsapp_message")
-    //     .optional()
-    //     .isLength({ min: 1, max: 1000 })
-    //     .withMessage('Whatsapp message must be min 1 characters and max 1000 characters'),
     // pass validator
     (req: Request, res: Response, next: NextFunction) => handlerValidator(req, res, next),
 ];
@@ -104,11 +94,27 @@ const validateProfileId = [
     (req: Request, res: Response, next: NextFunction) => handlerValidator(req, res, next),
 ];
 
+// validate configuration data
+const validateConfigurationData = [
+    check("brand_color")
+        .optional()
+        .isLength({ min: 0, max: 8 })
+        .withMessage('Brand color must be min 6 characters and max 8 characters')
+        .matches(/^#(?:[0-9a-fA-F]{3}){1,2}$/)
+        .withMessage('Brand color must be hexadecimal color string like (#FFFFFF)'),
+    check("whatsapp_message")
+        .optional()
+        .isLength({ min: 1, max: 1000 })
+        .withMessage('Whatsapp message must be min 1 characters and max 1000 characters'),
+    (req: Request, res: Response, next: NextFunction) => handlerValidator(req, res, next),
+];
+
 function isEnum(value: any): boolean {
     return Object.values(TypeSlider).includes(value);
 }
 
 export {
-    updateProfileValidator,
     validateProfileId,
+    updateProfileValidator,
+    validateConfigurationData,
 }

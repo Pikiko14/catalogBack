@@ -55,4 +55,19 @@ export class ProfileController {
             return errorResponse(res, error, 'Error change profile pictury.');
         }
     }
+
+    /**
+     * Create or uptate profile
+     * @param { Request } req
+     * @param { Response } res
+     */
+    setConfigurationOnProfile = async (req: RequestExt, res: Response) => {
+        try {
+            const body: ProfileInterface = matchedData(req) as ProfileInterface;
+            const { profile } = req.params;
+            await this.service.setConfigurationOnProfile(res, body, profile);
+        } catch (error) {
+            return errorResponse(res, error, 'Error updating profile.');
+        }
+    }
 }

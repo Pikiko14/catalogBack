@@ -4,7 +4,7 @@ import { Utils } from "../utils/utils";
 import ProfileModel from "../models/profile.model";
 import { SubscriptionService } from "./subscriptions.service";
 import { ProfileInterface } from './../interfaces/profile.interface';
-import { errorResponse, successResponse } from "../utils/api.responser";
+import { errorResponse, notFountResponse, successResponse } from "../utils/api.responser";
 
 export class ProfileService {
     model: any = ProfileModel;
@@ -141,5 +141,32 @@ export class ProfileService {
         if (profile)
             return profile;
         return false;
+    }
+
+    /**
+     * set configuration profile
+     */
+    setConfigurationOnProfile = async (res: Response, body: ProfileInterface, profileId: string | ObjectId) =>{
+        try {
+            // update configuration data
+            const profile = await this.model.findOneAndUpdate(
+                { _id: profileId },
+                {
+                    whatsapp_message: body.whatsapp_message || null,
+                    brand_color: body.brand_color || null
+                },
+                {
+                    new: true,
+                }
+            );
+            // valdiate if profile exists
+            if (!profile) {
+                return notFountResponse(res, profileId, 'Don´t exists profile with this ID.');
+            }
+            // return data
+            return successResponse(res, profile, 'Profile configuration set successfully');
+        } catch (error) {
+            throw error  
+        }
     }
 }

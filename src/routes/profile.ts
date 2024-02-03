@@ -1,7 +1,7 @@
 import { Router } from "express";
 import { upload } from "../utils/storage";
 import { ProfileController } from "../controllers/profile.controller";
-import { updateProfileValidator, validateProfileId } from "../validators/profile.validator";
+import { updateProfileValidator, validateConfigurationData, validateProfileId } from "../validators/profile.validator";
 import sessionCheck from "../middlewares/session.middleware";
 import perMissionMiddleware from "../middlewares/permission.middleware";
 import { UserIdValidator } from "../validators/users.validator";
@@ -38,6 +38,15 @@ router.post(
     upload.single('file'),
     validateProfileId,
     profileController.changeProfilePictury,
+);
+
+router.put(
+    '/:profile/configuration/set',
+    sessionCheck,
+    perMissionMiddleware('update-profile'),
+    validateProfileId,
+    validateConfigurationData,
+    profileController.setConfigurationOnProfile,
 );
 
 export { router };
