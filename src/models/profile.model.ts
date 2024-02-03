@@ -45,7 +45,17 @@ const ProfileSchema = new Schema<ProfileInterface>(
         user_id: {
             type: mongoose.Schema.Types.ObjectId,
             ref: 'users'
-        }
+        },
+        brand_color: {
+            type: String,
+            default: null,
+            nullable: true,
+        },
+        whatsapp_message: {
+            type: String,
+            default: null,
+            nullable: true,
+        },
     },
     {
         timestamps: true,

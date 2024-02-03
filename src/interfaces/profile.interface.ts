@@ -10,6 +10,8 @@ export interface ProfileInterface {
     address?: string;
     website?: string;
     type_slider?: TypeSlider;
+    brand_color?: string;
+    whatsapp_message?: string;
     user_id: mongoose.Schema.Types.ObjectId;
     subscription?: SubscriptionsInterface | null;
 }
