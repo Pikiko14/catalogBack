@@ -95,7 +95,9 @@ const validateConfigurationData = [
     check("whatsapp_message")
         .optional()
         .isLength({ min: 1, max: 1000 })
-        .withMessage('Whatsapp message must be min 1 characters and max 1000 characters'),
+        .withMessage('Whatsapp message must be min 1 characters and max 1000 characters')
+        .matches(/{{\s*order\s*}}.*{{\s*total\s*}}|{{\s*total\s*}}.*{{\s*order\s*}}/)
+        .withMessage('The text must contain {{ order }} and {{ total }} in order to display shopping cart information'),
     check("type_slider")
         .optional()
         .custom(isEnum)
