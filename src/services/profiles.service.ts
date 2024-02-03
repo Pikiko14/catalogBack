@@ -153,7 +153,8 @@ export class ProfileService {
                 { _id: profileId },
                 {
                     whatsapp_message: body.whatsapp_message || null,
-                    brand_color: body.brand_color || null
+                    brand_color: body.brand_color || null,
+                    type_slider: body.type_slider || null,
                 },
                 {
                     new: true,
