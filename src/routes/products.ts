@@ -5,7 +5,7 @@ import subscriptionCheck from "../middlewares/subscription.middleware";
 import { ProductsController } from "../controllers/products.controller";
 import perMissionMiddleware from "../middlewares/permission.middleware";
 import parseBodyAttributesToJson from "../middlewares/parseBody.middleware";
-import { ProductCreateValidator, ProductMediaDefaulValidator, ProductUpdateValidator } from "../validators/products.validator";
+import { ProductArrayIdValidator, ProductCreateValidator, ProductMediaDefaulValidator, ProductUpdateValidator } from "../validators/products.validator";
 
 // init router
 const router = Router();
@@ -88,6 +88,15 @@ router.post(
 router.get(
     '/:productId/show',
     controller.showProductByFront,
+);
+
+/**
+ * added to cart products
+ */
+router.post(
+    '/add/to/cart',
+    ProductArrayIdValidator,
+    controller.addProductToCart,
 );
 
 // export router

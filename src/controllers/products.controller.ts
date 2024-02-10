@@ -127,4 +127,19 @@ export class ProductsController {
             return errorResponse(res, error.message, 'Error show products');
         }
     }
+
+    /**
+     * add product to cart
+     * @param req
+     * @param res
+     * @returns
+     */
+    addProductToCart = async (req: RequestExt, res: Response) => {
+        try {
+            const body = matchedData(req);
+            await this.service.addProductToCart(res, body);
+        } catch (error: any) {
+            return errorResponse(res, error.message, 'Error adding to cart');
+        }
+    }
 }

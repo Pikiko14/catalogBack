@@ -301,4 +301,41 @@ export class ProductsService {
             throw error;
         }
     }
+
+    /**
+     * get product by id out user
+     * @param { string } productId
+     * @return { ProductInterface | void }
+     */
+    public async getProductByIdOutUser (productId: string): Promise<ProductInterface | any> {
+        const product = await this.model.findOne({ _id: productId }, 'id name default_image reference')
+        .populate({
+            path: 'categories',
+            select: 'name'
+        });
+        if (product) {
+            return product;
+        }
+        return null;
+    }
+
+    /**
+     * Delete product
+     * @param { Response } res
+     * @param { string[] } product
+     * @return
+     */
+    public async addProductToCart(res: Response, body: any) {
+        try {
+            // up added to cart on products
+            const results = await this.model.updateMany(
+                { _id: { $in: body.products } },
+                { $inc: { count_add_to_cart: 1 } }
+            );
+            // return data
+            return successResponse(res, results, 'Products added to cart successfully');
+        } catch (error) {
+            throw error;
+        }
+    }
 }

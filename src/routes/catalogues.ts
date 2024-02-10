@@ -79,7 +79,7 @@ router.get('/activate/:id',
 );
 
 /**
- * Activate catalogs
+ * list  catalogs fron clients
  */
 router.get('/show/:id',
     IdCatalogueValidator,
