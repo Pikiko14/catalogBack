@@ -22,6 +22,7 @@ const RegisterValidator = [
             if (existUser) {
                 throw new Error('Username exist in our records');
             }
+            return true;
         }),
     check('password')
         .exists()
@@ -70,6 +71,7 @@ const RegisterValidator = [
             if (existEmail) {
                 throw new Error('Email exist in our records');
             }
+            return true;
         }),
     (req: Request, res: Response, next: NextFunction) => handlerValidator(req, res, next),
 ];
@@ -89,6 +91,7 @@ const LoginValidator = [
             if (!existUser) {
                 throw new Error('Username dont´t exist in our records');
             }
+            return true;
         }),
     check('password')
         .exists()

@@ -25,6 +25,7 @@ const UserIdValidator = [
         if (!existUser) {
             throw new Error('User id dont´t exist in our records');
         }
+        return true;
     }),
     (req: Request, res: Response, next: NextFunction) => handlerValidator(req, res, next),
 ];
@@ -46,6 +47,7 @@ const UpdateUserData = [
         if (existUser && existUser.id !== id) {
             throw new Error('Username exist in our records');
         }
+        return true;
     }),
     check('password')
         .if((value, { req }) => req.body.password.length > 0)

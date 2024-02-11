@@ -61,6 +61,7 @@ const IdCatalogueValidator = [
         if (!existCatalogue) {
             throw new Error('Catalogue id dont´t exist in our records');
         }
+        return true;
     }),
     (req: Request, res: Response, next: NextFunction) => handlerValidator(req, res, next),
 ]; // id catalogue validator
