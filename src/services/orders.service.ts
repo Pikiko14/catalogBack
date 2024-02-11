@@ -39,9 +39,9 @@ export class OrdersService {
                     this.tax = 0;
                 }
             }
-            body.tax = this.tax;
-            body.base = this.base;
-            body.total = this.total;
+            body.tax = parseFloat(this.tax.toFixed(2));
+            body.base = parseFloat(this.base.toFixed(2));
+            body.total = parseFloat(this.total.toFixed(2));
             body.total_tax = this.total_tax;
             // save order to bbdd
             const order = await this.model.create(body)
