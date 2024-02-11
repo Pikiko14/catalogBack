@@ -143,7 +143,7 @@ export class DashboardService {
             {
                 $group: {
                     _id: '$city', // Agrupar por la ciudad
-                    loc: { $first: '$loc' } // Obtener la ubicación de la primera visita en cada ciudad
+                    locs: { $push: '$loc' } // Obtener todas las ubicaciones de visita en cada ciudad
                 }
             },
             {
@@ -152,8 +152,19 @@ export class DashboardService {
                     country: '$country', // Extraer el país del modelo
                     region: '$region', // Extraer la región del modelo
                     city: '$_id', // Utilizar el nombre de la ciudad como city
-                    lat: { $arrayElemAt: [{ $split: ['$loc', ','] }, 0] }, // Extraer la latitud
-                    long: { $arrayElemAt: [{ $split: ['$loc', ','] }, 1] } // Extraer la longitud
+                    locations: '$locs' // Retener todas las ubicaciones de visita en un array
+                }
+            },
+            {
+                $unwind: '$locations' // Descomponer el array de ubicaciones
+            },
+            {
+                $project: {
+                    country: 1,
+                    region: 1,
+                    city: 1,
+                    lat: { $arrayElemAt: [{ $split: ['$locations', ','] }, 0] }, // Extraer la latitud
+                    long: { $arrayElemAt: [{ $split: ['$locations', ','] }, 1] } // Extraer la longitud
                 }
             }
         ]);
