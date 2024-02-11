@@ -44,6 +44,7 @@ export class DashboardService {
             await this.loadMetricsMoreAddCart(userId);
             await this.loadMetricsMoreSellers(userId);
             await this.loadCityMoreVisit(userId);
+            const visits = await this.loadLocationData(userId)
             // return data
             return successResponse(
                 res, 
@@ -51,6 +52,7 @@ export class DashboardService {
                     moreSellers: this.moreSellers,
                     moreAddToCart: this.moreAddCart,
                     visitByCity: this.cityMoreVisit,
+                    visits,
                 },
                 'Metrics data',
             );
@@ -120,6 +122,40 @@ export class DashboardService {
             this.cityMoreVisit.data.push(visit.count);
             this.cityMoreVisit.labels.push(visit.city);
         }
+    }
+
+    /**
+     * Load visits list
+     * @param { string } userId
+     * @return
+     */
+    public async loadLocationData(userId: string): Promise<{ country: string, region: string, city: string }[]> {
+        const locations = await this.visitsModel.aggregate([
+            {
+                $match: { user_id: new mongoose.Types.ObjectId(userId) } // Filtrar por el ID de usuario
+            },
+            {
+                $sort: { createdAt: -1 } // Ordenar las visitas por fecha de creación en orden descendente
+            },
+            {
+                $limit: 1000 // Limitar a las últimas 1000 visitas
+            },
+            {
+                $group: {
+                    _id: '$city', // Agrupar por la ciudad
+                    loc: { $first: '$loc' } // Obtener la ubicación de la primera visita en cada ciudad
+                }
+            },
+            {
+                $project: {
+                    _id: 0, // Excluir el campo _id
+                    country: { $arrayElemAt: [{ $split: ['$loc', ','] }, 0] }, // Extraer el país
+                    region: { $arrayElemAt: [{ $split: ['$loc', ','] }, 1] }, // Extraer la región
+                    city: '$_id' // Utilizar el nombre de la ciudad como city
+                }
+            }
+        ]);
+        return locations;
     }
 
     /**
