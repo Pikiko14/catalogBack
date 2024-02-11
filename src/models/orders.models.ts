@@ -55,6 +55,11 @@ const OrdersSchema = new Schema<OrderInterface>(
             nullable: false,
             default: 0,
         },
+        base: {
+            type: Number,
+            nullable: false,
+            default: 0,
+        },
         total_tax: {
             type: Number,
             nullable: false,
@@ -87,6 +92,11 @@ const OrdersSchema = new Schema<OrderInterface>(
                 default: 0,
             },
             total: {
+                type: Number,
+                nullable: false,
+                default: 0,
+            },
+            base: {
                 type: Number,
                 nullable: false,
                 default: 0,

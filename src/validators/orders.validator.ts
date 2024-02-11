@@ -100,6 +100,16 @@ const OrdersCreationValidator = [
             }
             return true;
         }),
+    check('base')
+        .optional()
+        .isNumeric()
+        .withMessage('Order base must be a numeric value')
+        .custom((value: number) => {
+            if (value < 0) {
+                throw new Error('Order base must be greater than or equal to 0');
+            }
+            return true;
+        }),
     check('catalogue_id')
         .notEmpty()
         .isMongoId()
@@ -186,6 +196,16 @@ const OrdersCreationValidator = [
         .custom((value: number) => {
             if (value < 0) {
                 throw new Error('item total tax must be greater than or equal to 0');
+            }
+            return true;
+        }),
+    check('items.*.base')
+        .optional()
+        .isNumeric()
+        .withMessage('Item base must be a numeric value')
+        .custom((value: number) => {
+            if (value < 0) {
+                throw new Error('Item base must be greater than or equal to 0');
             }
             return true;
         }),

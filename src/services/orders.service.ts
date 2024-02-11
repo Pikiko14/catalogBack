@@ -6,6 +6,7 @@ import { ProductsService } from "./products.service";
 
 export class OrdersService {
     tax: number = 0;
+    base: number = 0;
     total: number = 0;
     total_tax: number = 0
     model: any = OrdersModel;
@@ -31,6 +32,7 @@ export class OrdersService {
                 productsIds.push(item.parent);
                 // calculate tax
                 this.tax = item.tax;
+                this.base += item.base || 0;
                 this.total += item.total || 0;
                 this.total_tax += item.total_tax || 0;
                 if (this.tax !== item.tax) {
@@ -38,6 +40,7 @@ export class OrdersService {
                 }
             }
             body.tax = this.tax;
+            body.base = this.base;
             body.total = this.total;
             body.total_tax = this.total_tax;
             // save order to bbdd

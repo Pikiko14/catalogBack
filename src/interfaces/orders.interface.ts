@@ -4,6 +4,7 @@ export interface OrderInterface {
     client: ClientInterface;
     total: number;
     tax: number;
+    base?: number;
     total_tax: number;
     items: ItemsInterface[];
     user_id: string | mongoose.Schema.Types.ObjectId;
@@ -31,4 +32,5 @@ export interface ItemsInterface {
     total_tax?: number;
     product_id: ObjectId;
     parent?: string;
+    base?: number;
 }
