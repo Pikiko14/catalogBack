@@ -149,9 +149,11 @@ export class DashboardService {
             {
                 $project: {
                     _id: 0, // Excluir el campo _id
-                    country: { $arrayElemAt: [{ $split: ['$loc', ','] }, 0] }, // Extraer el país
-                    region: { $arrayElemAt: [{ $split: ['$loc', ','] }, 1] }, // Extraer la región
-                    city: '$_id' // Utilizar el nombre de la ciudad como city
+                    country: '$country', // Extraer el país del modelo
+                    region: '$region', // Extraer la región del modelo
+                    city: '$_id', // Utilizar el nombre de la ciudad como city
+                    lat: { $arrayElemAt: [{ $split: ['$loc', ','] }, 0] }, // Extraer la latitud
+                    long: { $arrayElemAt: [{ $split: ['$loc', ','] }, 1] } // Extraer la longitud
                 }
             }
         ]);
