@@ -1,8 +1,10 @@
 import { Response } from "express";
 import OrdersModel from './../models/orders.models';
-import { successResponse } from "../utils/api.responser";
-import { OrderInterface } from "../interfaces/orders.interface";
 import { ProductsService } from "./products.service";
+import { CatalogueService } from "./catalogues.service";
+import { successResponse } from "../utils/api.responser";
+import { Catalogue } from "../interfaces/catalogues.interface";
+import { OrderInterface } from "../interfaces/orders.interface";
 
 export class OrdersService {
     tax: number = 0;
@@ -11,9 +13,11 @@ export class OrdersService {
     total_tax: number = 0
     model: any = OrdersModel;
     productService: ProductsService;
+    catalogueService: CatalogueService;
 
     constructor() {
         this.productService = new ProductsService();
+        this.catalogueService = new CatalogueService();
     }
 
     /**
@@ -39,10 +43,14 @@ export class OrdersService {
                     this.tax = 0;
                 }
             }
-            body.tax = parseFloat(this.tax.toFixed(2));
+            body.tax = this.tax;
             body.base = parseFloat(this.base.toFixed(2));
             body.total = parseFloat(this.total.toFixed(2));
-            body.total_tax = this.total_tax;
+            body.total_tax =  parseFloat(this.total_tax.toFixed(2));
+            const catalogue = await this.catalogueService.findById(body.catalogue_id as any) as Catalogue;
+            if (catalogue) {
+                body.user_id = catalogue.user_id.toString();
+            }
             // save order to bbdd
             const order = await this.model.create(body)
             if (!order) {
