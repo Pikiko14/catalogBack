@@ -91,7 +91,7 @@ const OrdersSchema = new Schema<OrderInterface>(
                 nullable: false,
                 default: 0,
             },
-            taxTotal: {
+            total_tax: {
                 type: Number,
                 nullable: false,
                 default: 0,

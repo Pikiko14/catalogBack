@@ -123,12 +123,11 @@ const OrdersCreationValidator = [
             return true;
         }),
     check('items.*.attribute')
-        .notEmpty()
-        .withMessage('Item attribute is required')
+        .optional()
         .isString()
         .withMessage('Item attribute must be string')
-        .isLength({ min: 1, max: 60 })
-        .withMessage('Item attribute must have a minimum of 1 characters and a maximum of 60.'),
+        .isLength({ min: 0, max: 60 })
+        .withMessage('Item attribute must have a minimum of 0 characters and a maximum of 60.'),
     check('items.*.reference')
         .notEmpty()
         .withMessage('Item reference is required')
