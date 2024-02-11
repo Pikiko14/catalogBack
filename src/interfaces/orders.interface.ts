@@ -28,7 +28,7 @@ export interface ItemsInterface {
     reference: string;
     tax: number;
     total?: number;
-    total_tax?: number | string;
+    total_tax?: number;
     product_id: ObjectId;
     parent?: string;
 }

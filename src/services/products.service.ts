@@ -338,4 +338,22 @@ export class ProductsService {
             throw error;
         }
     }
+
+    /**
+     * add product more sell status
+     * @param { * } productIds 
+     */
+    public async addMoreSellStatus(productIds: string[]) {
+        try {
+            // up added to cart on products
+            const results = await this.model.updateMany(
+                { _id: { $in: productIds } },
+                { $inc: { count_order_finish: 1 } }
+            );
+            // return data
+            return results;
+        } catch (error) {
+            throw error;
+        }
+    }
 }
