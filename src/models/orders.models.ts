@@ -100,7 +100,15 @@ const OrdersSchema = new Schema<OrderInterface>(
                 type: mongoose.Schema.Types.ObjectId,
                 ref: 'products',
             },
-        }]
+        }],
+        user_id: {
+            type: mongoose.Schema.Types.ObjectId,
+            ref: 'users'
+        },
+        catalogue_id: {
+            type: mongoose.Schema.Types.ObjectId,
+            ref: 'catalogues'
+        },
     },
     {
         timestamps: true,

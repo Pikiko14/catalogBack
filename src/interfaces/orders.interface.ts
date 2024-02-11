@@ -1,4 +1,4 @@
-import { ObjectId } from "mongoose";
+import mongoose, { ObjectId } from "mongoose";
 
 export interface OrderInterface {
     client: ClientInterface;
@@ -6,6 +6,8 @@ export interface OrderInterface {
     tax: number;
     total_tax: number;
     items: ItemsInterface[];
+    user_id: string | mongoose.Schema.Types.ObjectId;
+    catalogue_id: string | mongoose.Schema.Types.ObjectId;
 }
 
 export interface ClientInterface {
@@ -28,4 +30,5 @@ export interface ItemsInterface {
     total?: number;
     taxTotal?: number | string;
     product_id: ObjectId;
+    parent?: string;
 }

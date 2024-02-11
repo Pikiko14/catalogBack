@@ -24,6 +24,7 @@ const updateProfileValidator = [
             if (existBrandName && existBrandName.user_id.toString() !== user_id) {
                 throw new Error('Brand name exist in our records');
             }
+            return true;
         }),
     check('phone_number')
         .optional()
@@ -59,6 +60,7 @@ const updateProfileValidator = [
             if (!existUser) {
                 throw new Error('User id dont´t exist in our records');
             }
+            return true;
         }),
     // pass validator
     (req: Request, res: Response, next: NextFunction) => handlerValidator(req, res, next),
@@ -80,6 +82,7 @@ const validateProfileId = [
         if (!existUser) {
             throw new Error('Profile id dont´t exist in our records');
         }
+        return true;
     }),
     (req: Request, res: Response, next: NextFunction) => handlerValidator(req, res, next),
 ];
