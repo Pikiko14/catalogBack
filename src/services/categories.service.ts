@@ -4,13 +4,17 @@ import { User } from "../interfaces/users.interface";
 import CategoriesModel from "../models/categories.model";
 import { CategoryInterface } from "../interfaces/categories.interface";
 import { errorResponse, successResponse } from "../utils/api.responser";
+import { CatalogueService } from "./catalogues.service";
+import { Catalogue } from "../interfaces/catalogues.interface";
 
 export class CategoriesService {
-    model: any = CategoriesModel;
     utils: Utils;
+    model: any = CategoriesModel;
+    catalogueService: CatalogueService;
 
     constructor () {
         this.utils = new Utils;
+        this.catalogueService = new CatalogueService();
     }
 
     /**
@@ -130,6 +134,23 @@ export class CategoriesService {
             return successResponse(res, category, "Categories deleted success");
         } catch (error: any) {
             return errorResponse(res, error.message, 'Error deleting categories');
+        }
+    }
+
+    /**
+     * @param { Response } res
+     * @param { string } catalogueId
+     */
+    public async listCategoriesByCatalog (res: Response, catalogueId: string) {
+        try {
+            let categories: CategoryInterface[] = [];
+            const catalogue: Catalogue = await this.catalogueService.findById(catalogueId) as Catalogue;
+            if (catalogue) {
+                categories = await this.model.find({ user_id: catalogue.user_id }, '_id name image');
+            }
+            return successResponse(res, categories, 'Categories list');
+        } catch (error) {
+            throw error;
         }
     }
 }

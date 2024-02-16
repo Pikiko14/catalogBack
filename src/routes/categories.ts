@@ -60,6 +60,14 @@ router.delete(
     controller.deleteCategories,
 );
 
+/**
+ * list categories
+ */
+router.get(
+    '/list/:catalogue',
+    controller.listCategoriesByCatalog,
+);
+
 
 // export router
 export { router };
