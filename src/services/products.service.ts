@@ -3,9 +3,11 @@ import ProductModel from './../models/products.model';
 import { MediaProductInterface, ProductInterface, ProviderMediaEnum, TypeMediaEnum } from './../interfaces/products.interface';
 import { Response } from 'express';
 import { errorResponse, notFountResponse, successResponse } from "../utils/api.responser";
+import PagesModel from "../models/pages.models";
 
 export class ProductsService {
     model: any = ProductModel;
+    pagesModel: any = PagesModel;
     utils: Utils;
 
     constructor(
@@ -353,6 +355,30 @@ export class ProductsService {
             // return data
             return results;
         } catch (error) {
+            throw error;
+        }
+    }
+
+    /**
+     * Search product
+     * @param productName 
+     * @returns 
+     */
+    public async findPagesByProductName(res: Response, productName: string, catalogue_id: string): Promise<any> {
+        try {
+            // Busca el producto por su nombre
+            const products = await ProductModel.find({ name: { $regex: productName, $options: 'i' } });
+            // Array para almacenar los IDs de los productos encontrados
+            const productIds = products.map((product: ProductInterface) => product._id);
+            // Busca las páginas que contienen los productos encontrados
+            const pages = await this.pagesModel.find({ 'images.buttons.product': { $in: productIds }, catalogue_id: catalogue_id })
+                .populate({
+                    path: 'images.buttons.product',
+                    model: 'products' // Nombre del modelo de Productos
+                });
+            return successResponse(res, pages, 'pages filtered');
+        } catch (error) {
+            console.error('Error al buscar páginas:', error);
             throw error;
         }
     }

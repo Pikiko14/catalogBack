@@ -99,5 +99,13 @@ router.post(
     controller.addProductToCart,
 );
 
+/**
+ * search product
+ */
+router.get(
+    '/search/:name',
+    controller.findPagesByProductName,
+);
+
 // export router
 export { router };

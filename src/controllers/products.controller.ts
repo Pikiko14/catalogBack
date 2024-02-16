@@ -142,4 +142,20 @@ export class ProductsController {
             return errorResponse(res, error.message, 'Error adding to cart');
         }
     }
+
+    /**
+     * add product to cart
+     * @param req
+     * @param res
+     * @returns
+     */
+    findPagesByProductName = async (req: RequestExt, res: Response) => {
+        try {
+            const { name } = req.params as any;
+            const { catalogue_id } = req.query as any;
+            await this.service.findPagesByProductName(res, name, catalogue_id);
+        } catch (error: any) {
+            return errorResponse(res, error.message, 'Error product search');
+        }
+    }
 }
