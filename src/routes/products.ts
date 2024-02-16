@@ -103,7 +103,7 @@ router.post(
  * search product
  */
 router.get(
-    '/search/:name',
+    '/filter/front',
     controller.findPagesByProductName,
 );
 

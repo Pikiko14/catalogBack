@@ -4,6 +4,7 @@ import { MediaProductInterface, ProductInterface, ProviderMediaEnum, TypeMediaEn
 import { Response } from 'express';
 import { errorResponse, notFountResponse, successResponse } from "../utils/api.responser";
 import PagesModel from "../models/pages.models";
+import { Catalogue } from "../interfaces/catalogues.interface";
 
 export class ProductsService {
     model: any = ProductModel;
@@ -366,16 +367,25 @@ export class ProductsService {
      */
     public async findPagesByProductName(res: Response, productName: string, catalogue_id: string): Promise<any> {
         try {
-            // Busca el producto por su nombre
-            const products = await ProductModel.find({ name: { $regex: productName, $options: 'i' } });
-            // Array para almacenar los IDs de los productos encontrados
-            const productIds = products.map((product: ProductInterface) => product._id);
-            // Busca las páginas que contienen los productos encontrados
-            const pages = await this.pagesModel.find({ 'images.buttons.product': { $in: productIds }, catalogue_id: catalogue_id })
+            let pages = [];
+            if (productName) {
+                // Busca el producto por su nombre
+                const products = await ProductModel.find({ name: { $regex: productName, $options: 'i' } });
+                // Array para almacenar los IDs de los productos encontrados
+                const productIds = products.map((product: ProductInterface) => product._id);
+                // Busca las páginas que contienen los productos encontrados
+                pages = await this.pagesModel.find({ 'images.buttons.product': { $in: productIds }, catalogue_id: catalogue_id })
                 .populate({
                     path: 'images.buttons.product',
-                    model: 'products' // Nombre del modelo de Productos
+                    model: 'products', // Nombre del modelo de Productos
                 });
+            } else {
+                pages = await this.pagesModel.find({ catalogue_id: catalogue_id })
+                .populate({
+                    path: 'images.buttons.product',
+                    model: 'products', // Nombre del modelo de Productos
+                });
+            }
             return successResponse(res, pages, 'pages filtered');
         } catch (error) {
             console.error('Error al buscar páginas:', error);

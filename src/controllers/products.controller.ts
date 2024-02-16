@@ -151,9 +151,8 @@ export class ProductsController {
      */
     findPagesByProductName = async (req: RequestExt, res: Response) => {
         try {
-            const { name } = req.params as any;
-            const { catalogue_id } = req.query as any;
-            await this.service.findPagesByProductName(res, name, catalogue_id);
+            const { catalogue_id, product } = req.query as any;
+            await this.service.findPagesByProductName(res, product, catalogue_id);
         } catch (error: any) {
             return errorResponse(res, error.message, 'Error product search');
         }
