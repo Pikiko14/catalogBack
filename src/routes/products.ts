@@ -104,7 +104,7 @@ router.post(
  */
 router.get(
     '/filter/front',
-    controller.findPagesByProductName,
+    controller.filterProducts,
 );
 
 // export router

@@ -363,17 +363,30 @@ export class ProductsService {
     /**
      * Search product
      * @param productName 
+     * @param catalogue_id 
+     * @param categories 
      * @returns 
      */
-    public async findPagesByProductName(res: Response, productName: string, catalogue_id: string): Promise<any> {
+    public async filterProducts(res: Response, productName: string, catalogue_id: string, categories: any): Promise<any> {
         try {
-            let pages = [];
-            if (productName) {
-                // Busca el producto por su nombre
-                const products = await ProductModel.find({ name: { $regex: productName, $options: 'i' } });
-                // Array para almacenar los IDs de los productos encontrados
+            let pages: string[] = [];
+            if (productName || categories) {
+                let productFilter: any = {};
+                // Si productName está definido, agregar filtro por nombre
+                if (productName) {
+                    console.log(categories);
+                    productFilter.name = { $regex: productName, $options: 'i' };
+                }
+                // Si categories están definidas, agregar filtro por categorías
+                if (categories && categories.length > 0) {
+                    productFilter.categories = { $in: JSON.parse(categories) };
+                }
+                // Buscar productos que cumplan con los filtros
+                const products = await this.model.find(productFilter);
+                console.log(products);
+                // Obtener los IDs de los productos encontrados
                 const productIds = products.map((product: ProductInterface) => product._id);
-                // Busca las páginas que contienen los productos encontrados
+                // Buscar las páginas que contienen los productos encontrados
                 pages = await this.pagesModel.find({ 'images.buttons.product': { $in: productIds }, catalogue_id: catalogue_id })
                 .populate({
                     path: 'images.buttons.product',
@@ -386,9 +399,8 @@ export class ProductsService {
                     model: 'products', // Nombre del modelo de Productos
                 });
             }
-            return successResponse(res, pages, 'pages filtered');
+            return successResponse(res, pages, 'Result data');
         } catch (error) {
-            console.error('Error al buscar páginas:', error);
             throw error;
         }
     }
