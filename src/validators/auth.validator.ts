@@ -1,5 +1,5 @@
 import { check } from 'express-validator';
-import { UserService } from '../services/users.service.';
+import { UserService } from '../services/users.service';
 import { Request, Response, NextFunction } from 'express';
 import { handlerValidator } from '../utils/handler.validator';
 

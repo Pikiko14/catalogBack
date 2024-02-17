@@ -126,4 +126,17 @@ export class CatalogueController {
             return errorResponse(res, error, 'Error on listing catalogue');
         }
     }
+
+    /**
+     * download excel and send by email
+     * @param {Request} req
+     * @param {Response} res
+     */
+    downloadPdfAndSendEmail = async (req: Request, res: Response) => {
+        try {
+            await this.service.downloadPdfAndSendEmail(res);
+        } catch (error) {
+            return errorResponse(res, error, 'Error on listing catalogue');
+        }
+    }
 }

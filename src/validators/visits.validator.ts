@@ -2,7 +2,7 @@ import { check } from "express-validator";
 import { NextFunction, Response, Request } from "express";
 import { handlerValidator } from "../utils/handler.validator";
 import { CatalogueService } from "../services/catalogues.service";
-import { UserService } from "../services/users.service.";
+import { UserService } from "../services/users.service";
 
 // services instances
 const userService = new UserService();

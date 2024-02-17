@@ -1,7 +1,7 @@
 import { Utils } from "../utils/utils";
 import mongoose, { Schema, Types, model, Model } from "mongoose";
 import { Catalogue } from "../interfaces/catalogues.interface";
-import { UserService } from './../services/users.service.';
+import { UserService } from '../services/users.service';
 
 //intances
 const utils = new Utils();

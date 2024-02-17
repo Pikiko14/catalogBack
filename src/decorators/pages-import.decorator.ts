@@ -6,7 +6,7 @@ import { deniedResponse, notFountResponse } from '../utils/api.responser';
 import { Utils } from '../utils/utils';
 import { CatalogueService } from '../services/catalogues.service';
 import { Catalogue } from '../interfaces/catalogues.interface';
-import { UserService } from '../services/users.service.';
+import { UserService } from '../services/users.service';
 import { SubscriptionUsabilityInterface } from '../interfaces/SubscriptionUsability.interface';
 import { SubscriptionUsabilityService } from '../services/subscription-usability.service';
 import { SubscriptionService } from '../services/subscriptions.service';

@@ -1,7 +1,7 @@
 import { Response, Request } from "express";
 import { errorResponse } from "../utils/api.responser";
 import { User } from "../interfaces/users.interface";
-import { UserService } from "../services/users.service."
+import { UserService } from "../services/users.service"
 import { matchedData } from "express-validator";
 
 // instances of clases

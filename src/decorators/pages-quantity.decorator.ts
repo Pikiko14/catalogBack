@@ -1,6 +1,6 @@
 import { Request, Response } from 'express';
 import { RequestExt } from '../interfaces/req-ext';
-import { UserService } from '../services/users.service.';
+import { UserService } from '../services/users.service';
 import { deniedResponse, notFountResponse } from '../utils/api.responser';
 import { Catalogue } from '../interfaces/catalogues.interface';
 import { CatalogueService } from '../services/catalogues.service';

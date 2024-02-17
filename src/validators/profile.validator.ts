@@ -3,7 +3,7 @@ import { Request, Response, NextFunction } from 'express';
 import { handlerValidator } from '../utils/handler.validator';
 import { ProfileService } from '../services/profiles.service';
 import { ProfileInterface, TypeSlider } from '../interfaces/profile.interface';
-import { UserService } from '../services/users.service.';
+import { UserService } from '../services/users.service';
 import { ObjectId } from 'mongodb';
 
 // service

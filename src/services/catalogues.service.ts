@@ -1,23 +1,27 @@
 import { Response } from "express";
 import { Utils } from "../utils/utils";
-import { UserService } from "./users.service.";
+import { UserService } from "./users.service";
+import { BullQueue } from "./queue.service";
+import { ProfileService } from "./profiles.service";
+import mongoose, { ObjectId, mongo } from "mongoose";
 import CatalogueModel from "../models/catalogues.model";
 import { Catalogue } from "../interfaces/catalogues.interface";
 import { ResponseInterface } from "../interfaces/response.interface";
-import { successResponse, errorResponse, createdResponse, notFountResponse } from "../utils/api.responser";
-import mongoose, { ObjectId, mongo } from "mongoose";
-import { ProfileService } from "./profiles.service";
+import { successResponse, errorResponse, createdResponse } from "../utils/api.responser";
+import { ForecastTodayProcessor } from "../utils/job.processor";
 
 export class CatalogueService {
     model: any = CatalogueModel;
     utils: Utils;
     userService: UserService;
     profileService: ProfileService;
+    public queueCatalogues: BullQueue<string>;
 
     constructor() {
         this.utils = new Utils();
         this.userService = new UserService();
         this.profileService = new ProfileService();
+        this.queueCatalogues = new BullQueue<string>("catalogue-queue");
     }
 
     /**
@@ -259,6 +263,28 @@ export class CatalogueService {
             const profile = await this.profileService.getProfileByUserId(catalogue.user_id as any);
             // reutrn response
             return createdResponse(res, { catalogue, profile }, "Catalogue information");
+        } catch (error) {
+            return errorResponse(res, error, 'Error show catalogues');
+        }
+    }
+
+    /**
+     * Create news catalogues
+     * @param {*} res
+     * @param {ObjectId | string} catalogueId
+     */
+    downloadPdfAndSendEmail = async (
+        res: Response,
+    ): Promise<ResponseInterface | void> => {
+        try {
+            // filter catalogue
+            this.queueCatalogues.add({ city: 'medellin' } as any);
+            const processor = new ForecastTodayProcessor(
+                this.queueCatalogues,
+            );
+            processor.start();
+            // reutrn response
+            return createdResponse(res, { success: true }, "Download proccess catalogue started.");
         } catch (error) {
             return errorResponse(res, error, 'Error show catalogues');
         }

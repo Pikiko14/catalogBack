@@ -374,7 +374,6 @@ export class ProductsService {
                 let productFilter: any = {};
                 // Si productName está definido, agregar filtro por nombre
                 if (productName) {
-                    console.log(categories);
                     productFilter.name = { $regex: productName, $options: 'i' };
                 }
                 // Si categories están definidas, agregar filtro por categorías

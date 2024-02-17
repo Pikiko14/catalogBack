@@ -86,5 +86,12 @@ router.get('/show/:id',
     controller.doListCatalog,
 );
 
+/**
+ * download pdf and send email
+ */
+router.post('/download/pdf',
+    controller.downloadPdfAndSendEmail,
+);
+
 // export router
 export { router };
