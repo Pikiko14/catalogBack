@@ -382,8 +382,7 @@ export class ProductsService {
                     productFilter.categories = { $in: JSON.parse(categories) };
                 }
                 // Buscar productos que cumplan con los filtros
-                const products = await this.model.find(productFilter);
-                console.log(products);
+                const products = await this.model.find(productFilter, '_id');
                 // Obtener los IDs de los productos encontrados
                 const productIds = products.map((product: ProductInterface) => product._id);
                 // Buscar las páginas que contienen los productos encontrados
