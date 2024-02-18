@@ -1,18 +1,20 @@
 import { Response, Request } from "express";
 import { matchedData  } from "express-validator"; 
 import { errorResponse } from "../utils/api.responser";
+import { S3Service } from "../services/aws/s3/s3.service";
 import { Catalogue } from "../interfaces/catalogues.interface";
 import { CatalogueService } from "../services/catalogues.service";
-import { RequestExt } from "../interfaces/req-ext";
 
 
 export class CatalogueController {
     service: CatalogueService;
     publicPath: string;
+    s3Service: S3Service;
 
     constructor() {
         this.service = new CatalogueService();
-        this.publicPath = 'catalogues'
+        this.publicPath = 'catalogues';
+        this.s3Service = new S3Service();
     }
 
     /**
@@ -44,8 +46,9 @@ export class CatalogueController {
     createCatalogue = async (req: Request | any, res: Response) => {
         try {
             const body = matchedData(req) as Catalogue; // get body clean
-            body.cover = `/${this.publicPath}/${req.file.filename}`;
-            const { _id, parent } = req.user; // get user loged id
+            const file = await this.s3Service.uploadObject(req.file); // upload file to aws s3
+            body.cover = `${file}`;
+            const { _id, parent } = req.user; // get user logged id
             body.user_id = parent ? parent : _id; // set  main user id
             await this.service.createCatalogue(res, body);
         } catch (error) {

@@ -1,10 +1,11 @@
 import  { Router} from "express";
 import { upload } from "../utils/storage";
+import { uploadS3 } from "../utils/storage.s3";
 import sessionCheck from "../middlewares/session.middleware";
+import subscriptionCheck from "../middlewares/subscription.middleware";
 import perMissionMiddleware from '../middlewares/permission.middleware';
 import { CatalogueController } from '../controllers/catalogues.controller';
 import { CreateCatalogueValidator, EmailValidator, IdCatalogueValidator } from "../validators/catalogues.validator";
-import subscriptionCheck from "../middlewares/subscription.middleware";
 
 // init router
 const router = Router();
@@ -30,7 +31,7 @@ router.post('/',
     sessionCheck,
     subscriptionCheck,
     perMissionMiddleware('create-catalogues'),
-    upload.single('cover'),
+    uploadS3.single('cover'),
     CreateCatalogueValidator,
     controller.createCatalogue
 );
