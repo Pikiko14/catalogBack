@@ -1,4 +1,4 @@
-import { readFileSync } from "fs"; // Importing file system module
+import  * as fs from "fs"; // Importing file system module
 import nodemailer from "nodemailer";
 import * as aws from '@aws-sdk/client-ses';
 
@@ -79,7 +79,7 @@ export class EmailService {
              // Convertir los nombres de los archivos a objetos de adjuntos
             const attachmentsData = await Promise.all(attachments.map(async (filename) => ({
                 filename,
-                content: await readFileSync(`${this.path}/uploads/${filename}`)
+                content: await fs.readFileSync(`${this.path}/uploads/${filename}`)
             })));
             // send email to client
             const email = await  transporter.sendMail({
@@ -88,6 +88,10 @@ export class EmailService {
                 subject,
                 text,
                 attachments: attachmentsData,
+            });
+            // delete file attachment
+            attachments.map(async (filename) => {
+                await fs.unlinkSync(`${this.path}/uploads/${filename}`);
             });
             // validate email
             if (email) {
