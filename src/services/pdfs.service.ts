@@ -1,13 +1,16 @@
 import * as fs from 'fs';
 import puppeteer from 'puppeteer';
 import * as Handlebars from 'handlebars';
+import { EmailService } from './aws/ses/email.service';
+import { PdfActions, EmailData } from '../interfaces/generals.interface';
 
-export class PdfService {
+export class PdfService extends EmailService {
     public data: any = {};
     public htmlContent: any = null;
     public filledHTMLContent: any = null;
 
     constructor(data: any) {
+        super();
         // Leer el contenido del archivo HTML
         this.data = data;
     }
@@ -16,7 +19,8 @@ export class PdfService {
      * Leer el contenido del archivo HTML
      * @param type 
      */
-    prepareDocumentHtml = async (type: string, name: string) => {
+    prepareDocumentHtml = async (type: string, name: string, actions: PdfActions) => {
+        // load pdf template
         switch (type) {
             case 'catalogue-download':
                 this.htmlContent = await fs.readFileSync('./src/templates/pdfs/catalogue.pdf.html', 'utf8');
@@ -25,11 +29,31 @@ export class PdfService {
             default:
                 break;
         }
+        // prepare template data
         const template = Handlebars.compile(this.htmlContent);
         this.filledHTMLContent = template(this.data);
+        // build pdf
         await this.buildPdf(name);
+        // validate action
+        const data: EmailData  = actions.data;
+        switch (actions.type) {
+            case 'send-email':
+                await this.sendEmailWithAttachments(
+                    data.email,
+                    data.subject,
+                    data.text as string,
+                    data.attachments as any
+                );
+                break;
+            default:
+                break;
+        }
     }
 
+    /**
+     * Build pdf file
+     * @param name 
+     */
     buildPdf = async (name: string) => {
         try {
              // Crear una instancia de Puppeteer
