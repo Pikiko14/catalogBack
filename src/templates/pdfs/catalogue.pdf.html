@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>PDF Template</title>
+    <style>
+        ul {
+            list-style-type: none;
+            padding: 0;
+        }
+
+        li {
+            margin-bottom: 0px;
+        }
+
+        img {
+            display: block;
+            width: 100%; /* Ajusta el ancho de la imagen al ancho del contenedor */
+            height: 550px; /* Permite que la altura se ajuste automáticamente para mantener la relación de aspecto */
+            margin-top: 10px; /* Espacio entre cada imagen */
+        }
+
+        .page {
+            page-break-after: always; /* Esto asegura que cada .page se muestre en una página nueva */
+        }
+    </style>
+</head>
+<body>
+    <ul>
+        {{#each pages}}
+            <div class="page">
+                {{#each this.images}}
+                        <img src="http://localhost:3001/{{ this.path }}" alt="Página del PDF">
+                {{/each}}
+            </div>
+        {{/each}}
+    </ul>
+</body>
+</html>

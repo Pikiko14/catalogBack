@@ -1,27 +1,25 @@
 import { Response } from "express";
 import { Utils } from "../utils/utils";
+import { QueueService } from "./queue.service";
 import { UserService } from "./users.service";
-import { BullQueue } from "./queue.service";
 import { ProfileService } from "./profiles.service";
 import mongoose, { ObjectId, mongo } from "mongoose";
 import CatalogueModel from "../models/catalogues.model";
 import { Catalogue } from "../interfaces/catalogues.interface";
 import { ResponseInterface } from "../interfaces/response.interface";
 import { successResponse, errorResponse, createdResponse } from "../utils/api.responser";
-import { ForecastTodayProcessor } from "../utils/job.processor";
 
-export class CatalogueService {
+export class CatalogueService extends QueueService {
     model: any = CatalogueModel;
     utils: Utils;
     userService: UserService;
     profileService: ProfileService;
-    public queueCatalogues: BullQueue<string>;
 
     constructor() {
+        super();
         this.utils = new Utils();
         this.userService = new UserService();
         this.profileService = new ProfileService();
-        this.queueCatalogues = new BullQueue<string>("catalogue-queue");
     }
 
     /**
@@ -270,23 +268,26 @@ export class CatalogueService {
 
     /**
      * Create news catalogues
-     * @param {*} res
-     * @param {ObjectId | string} catalogueId
+     * @param { * } res
+     * @param { ObjectId | string } catalogueId
+     * @param { any } body
      */
-    downloadPdfAndSendEmail = async (
-        res: Response,
-    ): Promise<ResponseInterface | void> => {
+    downloadPdfAndSendEmail = async (res: Response, body: any): Promise<ResponseInterface | void> => {
         try {
             // filter catalogue
-            this.queueCatalogues.add({ city: 'medellin' } as any);
-            const processor = new ForecastTodayProcessor(
-                this.queueCatalogues,
-            );
-            processor.start();
+            const catalogue = await this.model.findOne({ _id: body.id })
+            .populate('pages');
+            await this.myFirstQueue.add({
+                type: 'pdf',
+                email: body.email,
+                catalogue_id: body.id,
+                pages: catalogue.pages,
+                typeEmail: 'catalogue-download',
+            });
             // reutrn response
-            return createdResponse(res, { success: true }, "Download proccess catalogue started.");
+            return createdResponse(res, { catalogue }, "Download proccess catalogue started.");
         } catch (error) {
-            return errorResponse(res, error, 'Error show catalogues');
+            throw error;
         }
     }
 }

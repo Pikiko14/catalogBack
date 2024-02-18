@@ -66,7 +66,23 @@ const IdCatalogueValidator = [
     (req: Request, res: Response, next: NextFunction) => handlerValidator(req, res, next),
 ]; // id catalogue validator
 
+const EmailValidator = [
+    check('email')
+    .exists()
+    .withMessage('Email does not exist')
+    .notEmpty()
+    .withMessage('Email is empty')
+    .isString()
+    .withMessage('Email must be a string')
+    .isEmail()
+    .withMessage('Invalid email format')
+    .isLength({ min: 5, max: 90 })
+    .withMessage('Email must have a minimum of 5 characters'),
+(req: Request, res: Response, next: NextFunction) => handlerValidator(req, res, next),
+];
+
 export {
     CreateCatalogueValidator,
-    IdCatalogueValidator
+    IdCatalogueValidator,
+    EmailValidator,
 }

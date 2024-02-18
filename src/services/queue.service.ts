@@ -1,29 +1,48 @@
 import Queue from "bull";
-import { IJob, IQueue, IQueueOptions } from '../interfaces/queue.interface'
+import { PdfService } from "./pdfs.service";
 
-export class BullQueue<I = any> implements IQueue {
-    private bullQueue: Queue.Queue;
-    constructor(private queueName: string, options?: IQueueOptions) {
-        this.bullQueue = new Queue(queueName, {
-            redis: {
-                host: process.env.REDIS_HOST as string,
-                port: Number(process.env.REDIS_PORT),
-            },
-            ...(options || {}),
+export class QueueService {
+    myFirstQueue;
+
+    constructor() {
+        this.myFirstQueue = new Queue('catalogue-queue');
+        this.setupQueueListeners();
+        this.processQueue();
+    }
+
+    setupQueueListeners = () => {
+        // Escucha eventos de la cola (opcional)
+        this.myFirstQueue.on('completed', (job, result: any) => {
+            console.log(
+                `El trabajo ${job.id} ha sido completado correctamente.`
+            );
+        });
+
+        // log error on queue
+        this.myFirstQueue.on('error', (error) => {
+            console.log('Se ha producido un error en la cola:', error);
         });
     }
 
-    async add(data: I, options?: Queue.JobOptions): Promise<void> {
-        await this.bullQueue.add(data, options);
-    }
-
-    async process(
-        callback: (job: IJob<any>, done: Function) => Promise<any>
-    ): Promise<any> {
-        return this.bullQueue.process(callback);
-    }
-
-    on(event: string, callback: (...args: any[]) => void): void {
-        this.bullQueue.on(event, callback);
+    processQueue = async () => {
+        this.myFirstQueue.process(async (job, done) => {
+            const { data } = job;
+            try {
+                switch (data.type) {
+                    case 'pdf':
+                        const pdfService = new PdfService(data);
+                        if (data.typeEmail === 'catalogue-download') {
+                            await pdfService.prepareDocumentHtml('catalogue-download', data.catalogue_id);
+                        }
+                        break;
+                
+                    default:
+                        break;
+                }
+                done();
+            } catch (error) {
+                console.error('Error al generar el PDF:', error);
+            }
+        });
     }
 }

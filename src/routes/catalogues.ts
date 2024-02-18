@@ -3,7 +3,7 @@ import { upload } from "../utils/storage";
 import sessionCheck from "../middlewares/session.middleware";
 import perMissionMiddleware from '../middlewares/permission.middleware';
 import { CatalogueController } from '../controllers/catalogues.controller';
-import { CreateCatalogueValidator, IdCatalogueValidator } from "../validators/catalogues.validator";
+import { CreateCatalogueValidator, EmailValidator, IdCatalogueValidator } from "../validators/catalogues.validator";
 import subscriptionCheck from "../middlewares/subscription.middleware";
 
 // init router
@@ -90,6 +90,8 @@ router.get('/show/:id',
  * download pdf and send email
  */
 router.post('/download/pdf',
+    IdCatalogueValidator,
+    EmailValidator,
     controller.downloadPdfAndSendEmail,
 );
 

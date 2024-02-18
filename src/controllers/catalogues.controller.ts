@@ -134,9 +134,10 @@ export class CatalogueController {
      */
     downloadPdfAndSendEmail = async (req: Request, res: Response) => {
         try {
-            await this.service.downloadPdfAndSendEmail(res);
-        } catch (error) {
-            return errorResponse(res, error, 'Error on listing catalogue');
+            const body = matchedData(req);
+            await this.service.downloadPdfAndSendEmail(res, body);
+        } catch (error: any) {
+            return errorResponse(res, error.message, 'Error on download catalogue');
         }
     }
 }
