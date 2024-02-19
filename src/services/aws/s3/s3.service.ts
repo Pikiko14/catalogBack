@@ -99,7 +99,6 @@ export class S3Service {
         Key: fileKey,
       });
       const response = await this.client.send(command);
-      console.log(response);
     } catch (error: any) {
       throw error.message;
     }

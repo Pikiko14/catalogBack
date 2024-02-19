@@ -1,6 +1,5 @@
 import  { Router} from "express";
-import { upload } from "../utils/storage";
-import { uploadS3 } from "../utils/storage.s3";
+import { uploadS3, validateFileSize } from "../utils/storage.s3";
 import sessionCheck from "../middlewares/session.middleware";
 import subscriptionCheck from "../middlewares/subscription.middleware";
 import perMissionMiddleware from '../middlewares/permission.middleware';
@@ -29,9 +28,10 @@ router.get('/',
  */
 router.post('/',
     sessionCheck,
-    subscriptionCheck,
     perMissionMiddleware('create-catalogues'),
     uploadS3.single('cover'),
+    validateFileSize,
+    subscriptionCheck,
     CreateCatalogueValidator,
     controller.createCatalogue
 );
@@ -54,6 +54,7 @@ router.put('/:id',
     perMissionMiddleware('update-catalogues'),
     IdCatalogueValidator,
     uploadS3.single('cover'),
+    validateFileSize,
     CreateCatalogueValidator,
     controller.updateCatalogue
 );
