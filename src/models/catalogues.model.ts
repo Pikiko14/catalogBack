@@ -1,10 +1,12 @@
 import { Utils } from "../utils/utils";
+import { UserService } from '../services/users.service';
+import { S3Service } from "../services/aws/s3/s3.service";
 import mongoose, { Schema, Types, model, Model } from "mongoose";
 import { Catalogue } from "../interfaces/catalogues.interface";
-import { UserService } from '../services/users.service';
 
 //intances
 const utils = new Utils();
+const s3Service = new S3Service();
 const userService = new UserService();
 
 const CatalogueSchema = new Schema<Catalogue>(
@@ -50,7 +52,14 @@ CatalogueSchema.pre('findOneAndDelete', { document: true, query: true }, async f
     const catalog = await this.model.findOne(this.getQuery()).exec(); // Obtiene el catálogo antes de eliminarlo
     try {
         await userService.deleteCatalog(catalog.user_id, catalog._id); // delete catalog from user
-        await utils.deleteItemFromStorage(catalog.cover); // delete cover from catalog
+        // delete cover from s3
+        if (catalog.cover && catalog.cover.includes('.s3.us-east-2')) {
+            const key: string = catalog.cover.split('/').pop();
+            await s3Service.deleteSingleObject(key);
+            // delete from local storage
+        } else {
+            await utils.deleteItemFromStorage(catalog.cover); // delete cover from catalog
+        }
         // delete pages
         for (const pageId of catalog.pages) {
             const page = await model('pages').findById(pageId).exec();

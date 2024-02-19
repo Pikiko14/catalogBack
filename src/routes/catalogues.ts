@@ -53,7 +53,7 @@ router.put('/:id',
     sessionCheck,
     perMissionMiddleware('update-catalogues'),
     IdCatalogueValidator,
-    upload.single('cover'),
+    uploadS3.single('cover'),
     CreateCatalogueValidator,
     controller.updateCatalogue
 );
