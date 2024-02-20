@@ -1,13 +1,16 @@
 import Queue from "bull";
 import { PdfService } from "./pdfs.service";
+import { PdfToImage } from './../utils/pdf-to-img.handler';
 
 export class QueueService {
     myFirstQueue;
+    pdfToImage: PdfToImage;
 
     constructor() {
         this.myFirstQueue = new Queue('catalogue-queue');
         this.setupQueueListeners();
         this.processQueue();
+        this.pdfToImage = new PdfToImage();
     }
 
     setupQueueListeners = () => {
@@ -29,6 +32,7 @@ export class QueueService {
             const { data } = job;
             try {
                 switch (data.type) {
+                    // job for generate pdfs
                     case 'pdf':
                         const pdfService = new PdfService(data);
                         if (data.typeEmail === 'catalogue-download') {
@@ -47,6 +51,12 @@ export class QueueService {
                                     }
                                 }
                             );
+                        }
+                        break;
+                    // job with pages
+                    case 'page':
+                        if (data.action === 'process-pdf-to-image') {
+                            await this.pdfToImage.processPdfToImg(data.file, data.catalogue_id);
                         }
                         break;
                     default:
