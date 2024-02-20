@@ -1,11 +1,12 @@
 import { Response } from "express";
+import { fromPath } from "pdf2pic";
+import { Utils } from "../utils/utils";
 import PagesModel from "../models/pages.models";
+import { CatalogueService } from './catalogues.service';
+import { S3Service } from "../services/aws/s3/s3.service";
 import { Images, PagesInterface } from "../interfaces/pages.interface";
 import { errorResponse, successResponse } from "../utils/api.responser";
 import { ResponseInterface } from "../interfaces/response.interface";
-import { CatalogueService } from './catalogues.service';
-import { fromPath } from "pdf2pic";
-import { Utils } from "../utils/utils";
 import { WriteImageResponse } from "pdf2pic/dist/types/convertResponse";
 
 export class PagesService {
@@ -14,6 +15,7 @@ export class PagesService {
     optionsPdfToImg: any;
     utils: Utils;
     type: string;
+    s3Service: S3Service;
 
     constructor() {
         this.catalogService = new CatalogueService();
@@ -26,6 +28,7 @@ export class PagesService {
         };
         this.utils = new Utils();
         this.type = 'simple';
+        this.s3Service = new S3Service();
     }
 
     /**
@@ -81,10 +84,10 @@ export class PagesService {
             const page: PagesInterface | any = await this.model.create(body); // create page on bbdd
             // proces files images
             let controll = 1;
-            const path = await this.utils.getPath('images');
-            for (const file of files) {
+            const filesArray = await this.s3Service.uploadMultipleFiles(files);
+            for (const file of filesArray) {
                 const data: Images = {
-                    path: `/${path}/${file.filename}`,
+                    path: file,
                     order: controll,
                     buttons: []
                 }

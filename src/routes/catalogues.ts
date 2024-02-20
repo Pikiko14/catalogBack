@@ -1,6 +1,6 @@
 import  { Router} from "express";
-import { uploadS3, validateFileSize } from "../utils/storage.s3";
 import sessionCheck from "../middlewares/session.middleware";
+import { uploadS3, validateFileSize } from "../utils/storage.s3";
 import subscriptionCheck from "../middlewares/subscription.middleware";
 import perMissionMiddleware from '../middlewares/permission.middleware';
 import { CatalogueController } from '../controllers/catalogues.controller';

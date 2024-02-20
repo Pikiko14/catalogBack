@@ -3,10 +3,11 @@ import { upload } from "../utils/storage";
 import sessionCheck from "../middlewares/session.middleware";
 import { IdPageValidator } from "../validators/pages.validator";
 import { PagesController } from "../controllers/pages.controller";
-import { PagesCreationValidator, pagesImportValdiator } from "../validators/pages.validator";
+import { uploadS3, validateFilesSize } from "../utils/storage.s3";
+import subscriptionCheck from "../middlewares/subscription.middleware";
 import perMissionMiddleware from '../middlewares/permission.middleware';
 import { IdCatalogueValidator } from "../validators/catalogues.validator";
-import subscriptionCheck from "../middlewares/subscription.middleware";
+import { PagesCreationValidator, pagesImportValdiator } from "../validators/pages.validator";
 
 // init router
 const router = Router();
@@ -33,9 +34,10 @@ router.get(
 router.post(
     '/',
     sessionCheck,
-    subscriptionCheck,
     perMissionMiddleware('create-pages'),
-    upload.array('file'),
+    uploadS3.array('file'),
+    validateFilesSize,
+    subscriptionCheck,
     PagesCreationValidator,
     controller.createPages
 );

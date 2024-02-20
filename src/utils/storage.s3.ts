@@ -23,7 +23,21 @@ const validateFileSize = (req: Request, res: Response, next: NextFunction) => {
     next();
 }
 
+const validateFilesSize = (req: Request, res: Response, next: NextFunction) => {
+    const files = req.files as any;
+    if (!files) {
+        return deniedResponse(res, {}, 'No file in request.');
+    }
+    for (const file of files) {
+        if (file.size > 1000000) {
+            return deniedResponse(res, {}, 'File size exceeds 1MB limit.');
+        }
+    }
+    next();
+}
+
 export {
     uploadS3,
     validateFileSize,
+    validateFilesSize,
 }

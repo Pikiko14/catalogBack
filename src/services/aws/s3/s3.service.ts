@@ -1,4 +1,3 @@
-import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
 import {
   S3Client,
   ListBucketsCommand,
@@ -70,12 +69,12 @@ export class S3Service {
     try {
       // upload single file to aws
       const fileName = `${new Date().getTime()}${file.originalname}`;
-      const command = new PutObjectCommand({
+      const params = {
         Bucket: process.env.AWS_S3_BUCKET,
         Key: fileName,
         Body: file.buffer,
-      });
-      const response = await this.client.send(command);
+      };
+      const response = await this.uploadFile(params);
       // Generar una URL firmada para el objeto recién cargado sin límite de tiempo de expiración
       if (response.ETag) {
         let url = `${process.env.AWS_S3_URL}/${fileName}`;
@@ -84,6 +83,49 @@ export class S3Service {
     } catch (error: any) {
       console.error(error);
       throw error.message;
+    }
+  }
+
+  /**
+   * Upload multiples files to s3 server
+   * @param { any } files
+   */
+  uploadMultipleFiles = async (files: any) => {
+    try {
+      const filesArrys: string[] = [];
+      const promises = files.map((file: any) => {
+        // Configura los parámetros para cada archivo
+        const fileName = `${new Date().getTime()}${file.originalname}`;
+        const params = {
+          Bucket: process.env.AWS_S3_BUCKET,
+          Key: fileName,
+          Body: file.buffer,
+        };
+        filesArrys.push(`${process.env.AWS_S3_URL}/${fileName}`);
+        return this.uploadFile(params);
+      });
+      // Espera a que todas las promesas de carga se completen
+      await Promise.all(promises);
+      return filesArrys;
+    } catch (error) {
+      console.error("Error uploading files to S3:", error);
+      throw error;
+    }
+  }
+
+  /**
+   * Upload file
+   * @param params 
+   * @returns 
+   */
+  uploadFile = async (params: any) => {
+    try {
+      const command = new PutObjectCommand(params);
+      const response = await this.client.send(command);
+      return response;
+    } catch (error: any) {
+      console.error("Error uploading file to S3:", error.message);
+      throw error;
     }
   }
 
