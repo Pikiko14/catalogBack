@@ -1,10 +1,12 @@
 import { ObjectId } from 'mongodb';
 import { Utils } from "../utils/utils";
 import mongoose, { Schema, model } from "mongoose";
+import { S3Service } from '../services/aws/s3/s3.service';
 import { ProductInterface, ProviderMediaEnum, TypeMediaEnum } from "../interfaces/products.interface";
 
 // instances
 const utils = new Utils();
+const s3Service = new S3Service();
 
 // schemas
 const PricesSchema = new Schema(
@@ -170,7 +172,12 @@ ProductsSchema.pre('findOneAndDelete', { document: true, query: true }, async fu
     const product = await this.model.findOne(this.getQuery()).exec();
     try {
         for (const media of product.medias) {
-            await utils.deleteItemFromStorage(media.path);
+            if (media.path && media.path.includes('.s3.us-east-2')) {
+                const key: string = media.path.split('/').pop();
+                await s3Service.deleteSingleObject(key);
+            } else {
+                await utils.deleteItemFromStorage(media.path);
+            }
         }
         next();
     } catch (error) {

@@ -1,19 +1,22 @@
 import { Utils } from "../utils/utils";
 import ProductModel from './../models/products.model';
-import { MediaProductInterface, ProductInterface, ProviderMediaEnum, TypeMediaEnum } from './../interfaces/products.interface';
 import { Response } from 'express';
-import { errorResponse, notFountResponse, successResponse } from "../utils/api.responser";
 import PagesModel from "../models/pages.models";
+import { S3Service } from "./aws/s3/s3.service";
 import { Catalogue } from "../interfaces/catalogues.interface";
+import { errorResponse, notFountResponse, successResponse } from "../utils/api.responser";
+import { MediaProductInterface, ProductInterface, ProviderMediaEnum, TypeMediaEnum } from './../interfaces/products.interface';
 
 export class ProductsService {
+    utils: Utils;
     model: any = ProductModel;
     pagesModel: any = PagesModel;
-    utils: Utils;
+    s3Service: S3Service;
 
     constructor(
     ) {
         this.utils = new Utils();
+        this.s3Service = new S3Service();
     }
 
     /**
@@ -59,11 +62,11 @@ export class ProductsService {
             body.user_id = userId;
             let product = await this.model.create(body);
             // set images to products
-            const path = await this.utils.getPath('products');
             let i = 0;
-            for (const file of files) {
+            const filesArray = await this.s3Service.uploadMultipleFiles(files);
+            for (const file of filesArray) {
                 const data: MediaProductInterface = {
-                    path: `/${path}/${file.filename}`,
+                    path: file,
                     type: TypeMediaEnum.image,
                     provider: ProviderMediaEnum.owner,
                 }
@@ -225,7 +228,12 @@ export class ProductsService {
                 if (media.path === product.default_image?.path) {
                     deleteDefaultImg = true;
                 }
-                await this.utils.deleteItemFromStorage(media.path);
+                if (media.path && media.path.includes('.s3.us-east-2')) {
+                    const key: string = media.path.split('/').pop();
+                    await this.s3Service.deleteSingleObject(key);
+                } else {
+                    await this.utils.deleteItemFromStorage(media.path);
+                }
             }
             const mediasNoDeleteds = product.medias.filter((data: MediaProductInterface) => data.deleted !== true);
             const productBd = await this.model.findOneAndUpdate(
@@ -243,9 +251,9 @@ export class ProductsService {
      * @returns 
      */
     private async processNewMedia(files: any[]): Promise<MediaProductInterface[]> {
-        const path = await this.utils.getPath('products');
-        return files.map(file => ({
-            path: `/${path}/${file.filename}`,
+        const filesArray = await this.s3Service.uploadMultipleFiles(files);
+        return filesArray.map(file => ({
+            path: file,
             type: TypeMediaEnum.image,
             provider: ProviderMediaEnum.owner,
         }));

@@ -1,6 +1,7 @@
 import  { Router} from "express";
 import { upload } from "../utils/storage";
 import sessionCheck from "../middlewares/session.middleware";
+import { uploadS3, validateFilesSize } from "../utils/storage.s3";
 import subscriptionCheck from "../middlewares/subscription.middleware";
 import { ProductsController } from "../controllers/products.controller";
 import perMissionMiddleware from "../middlewares/permission.middleware";
@@ -30,7 +31,8 @@ router.post(
     '/',
     sessionCheck,
     perMissionMiddleware('create-products'),
-    upload.array('file'),
+    uploadS3.array('file'),
+    validateFilesSize,
     parseBodyAttributesToJson('product'),
     ProductCreateValidator,
     subscriptionCheck,
