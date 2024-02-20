@@ -6,14 +6,17 @@ import { CategoryInterface } from "../interfaces/categories.interface";
 import { errorResponse, successResponse } from "../utils/api.responser";
 import { CatalogueService } from "./catalogues.service";
 import { Catalogue } from "../interfaces/catalogues.interface";
+import { S3Service } from "./aws/s3/s3.service";
 
 export class CategoriesService {
     utils: Utils;
+    s3Service: S3Service;
     model: any = CategoriesModel;
     catalogueService: CatalogueService;
 
     constructor () {
         this.utils = new Utils;
+        this.s3Service = new S3Service();
         this.catalogueService = new CatalogueService();
     }
 
@@ -27,8 +30,8 @@ export class CategoriesService {
             body.user_id = user.parent || user._id;
             const category = await this.model.create(body);
             if (file) {
-                const path = await this.utils.getPath('categories');
-                category.image = `/${path}/${file.filename}`;
+                const fileS3 = await this.s3Service.uploadSingleObject(file);
+                category.image = fileS3;
             }
             await category.save();
             return successResponse(res, category, 'Category created success');
@@ -105,11 +108,16 @@ export class CategoriesService {
             );
             if (file) {
                 if (category.image) {
-                    await this.utils.deleteItemFromStorage(category.image);
+                    if (category.image && category.image.includes('.s3.us-east-2')) {
+                        const key: string = category.image.split('/').pop();
+                        await this.s3Service.deleteSingleObject(key);
+                    } else {
+                        await this.utils.deleteItemFromStorage(category.image);
+                    }
                 }
                 // save new image
-                const path = await this.utils.getPath('categories');
-                category.image = `/${path}/${file.filename}`;
+                const fileS3 = await this.s3Service.uploadSingleObject(file);
+                category.image = fileS3;
                 await category.save();
             }
             return successResponse(res, category, 'Category updated success');
@@ -129,7 +137,12 @@ export class CategoriesService {
                 _id: id
             });
             if (category.image) {
-                await this.utils.deleteItemFromStorage(category.image);
+                if (category.image && category.image.includes('.s3.us-east-2')) {
+                    const key: string = category.image.split('/').pop();
+                    await this.s3Service.deleteSingleObject(key);
+                } else {
+                    await this.utils.deleteItemFromStorage(category.image);
+                }
             }
             return successResponse(res, category, "Categories deleted success");
         } catch (error: any) {

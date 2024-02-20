@@ -1,6 +1,7 @@
 import  { Router} from "express";
 import { upload } from "../utils/storage";
 import sessionCheck from "../middlewares/session.middleware";
+import { uploadS3, validateFileSize } from "../utils/storage.s3";
 import subscriptionCheck from "../middlewares/subscription.middleware";
 import perMissionMiddleware from "../middlewares/permission.middleware";
 import { CategoriesController } from "../controllers/categories.controller";
@@ -19,7 +20,8 @@ router.post(
     '/',
     sessionCheck,
     perMissionMiddleware('create-categories'),
-    upload.single('file'),
+    uploadS3.single('file'),
+    validateFileSize,
     CategoriesCreationValidator,
     subscriptionCheck,
     controller.createCategories,
@@ -42,7 +44,7 @@ router.put(
     '/:id',
     sessionCheck,
     perMissionMiddleware('update-categories'),
-    upload.single('file'),
+    uploadS3.single('file'),
     CategoryIdValidator,
     CategoriesCreationValidator,
     controller.updateCategories,
