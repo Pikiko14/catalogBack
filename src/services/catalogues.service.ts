@@ -164,7 +164,7 @@ export class CatalogueService extends QueueService {
             body.end_date = new Date(body.end_date);
             // validate cover and delete old
             const catalog = await this.model.findOne({ _id: body.id });
-            if (catalog.cover) {
+            if (catalog.cover && file) {
                 if (catalog.cover && catalog.cover.includes('.s3.us-east-2')) {
                     const key: string = catalog.cover.split('/').pop();
                     await this.s3Service.deleteSingleObject(key);

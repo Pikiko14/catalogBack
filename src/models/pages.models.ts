@@ -7,7 +7,6 @@ import { CatalogueService } from "../services/catalogues.service";
 // instances
 const utils = new Utils();
 const s3Service = new S3Service();
-const catalogueService = new CatalogueService();
 
 // declare schema
 const PagesSchema = new Schema<PagesInterface>(
@@ -60,6 +59,7 @@ PagesSchema.pre('findOneAndDelete', { document: true, query: true }, async funct
     const page: any = await this.model.findOne(this.getQuery()).exec(); // get page for delete in catalogs
     if (page) {
         try {
+            const catalogueService = new CatalogueService();
             await catalogueService.deleteCatalog(page.catalogue_id, page._id);
             if (page.images && page.images.length > 0) {
                 for (const image of page.images) {

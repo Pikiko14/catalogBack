@@ -208,7 +208,8 @@ export class PagesService {
      */
     savePageFromPdfToImg = async (page: PagesInterface) => {
         try {
-            await this.model.create(page);
+            const pageBd: PagesInterface = await this.model.create(page);
+            return pageBd;
         } catch (error: any) {
             throw error.message;
         }

@@ -3,6 +3,7 @@ import { fromPath } from "pdf2pic";
 import { PagesService } from "../services/pages.service";
 import { PagesInterface } from "../interfaces/pages.interface";
 import { WriteImageResponse } from "pdf2pic/dist/types/convertResponse";
+import { CatalogueService } from "../services/catalogues.service";
 
 export class PdfToImage {
     type: string;
@@ -48,9 +49,10 @@ export class PdfToImage {
                         buttons: []
                     }
                     pageDate.images.push(image);
-                    // const pageService = new PagesService();
-                    // const page = await pageService.savePageFromPdfToImg(pageDate);
-                    // await this.catalogService.pushPage(true as any, catalogId as any, page._id);
+                    const pageService = new PagesService();
+                    const page = await pageService.savePageFromPdfToImg(pageDate);
+                    const catalogService = new CatalogueService();
+                    await catalogService.pushPage(true as any, catalogId as any, page._id);
                 })
             }
             // delete pdf from temp storage
