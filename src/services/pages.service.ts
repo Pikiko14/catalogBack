@@ -153,7 +153,7 @@ export class PagesService {
                 catalogue_id: body.catalogId
             });
             // return data
-            return successResponse(res, { file }, 'Catalogue page imported success');
+            return successResponse(res, { file }, 'The catalog import process has started successfully. If everything goes well, the pages will appear shortly.');
         } catch (error) {
             return errorResponse(res, error, 'Error on import catalogue pages.');
         }
