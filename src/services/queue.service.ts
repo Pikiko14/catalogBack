@@ -29,6 +29,7 @@ export class QueueService {
 
     processQueue = async () => {
         this.myFirstQueue.process(async (job, done) => {
+            console.log(`Iniciando trabajo ${job.id}`);
             const { data } = job;
             try {
                 switch (data.type) {

@@ -49,7 +49,7 @@ export class PdfToImage {
                     let image: any = {};
                     await setTimeout(async () => {
                         const buffer: any = await fs.readFileSync(`${process.cwd()}/uploads/${path}/${data.name}`);
-                        buffer.originalname = `img_catalog_${catalogId}_${new Date().getTime().toString()}`;
+                        buffer.originalname = `img_catalog_${catalogId}_${new Date().getTime().toString()}.webp`;
                         const s3Service = new S3Service();
                         const fileS3 = await s3Service.uploadSingleObject(buffer);
                         image = {
