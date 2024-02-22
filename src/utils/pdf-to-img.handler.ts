@@ -4,15 +4,16 @@ import { fromPath } from "pdf2pic";
 import { PagesService } from "../services/pages.service";
 import { S3Service } from '../services/aws/s3/s3.service';
 import { PagesInterface } from "../interfaces/pages.interface";
+import { EmailService } from '../services/aws/ses/email.service';
 import { CatalogueService } from "../services/catalogues.service";
-import { WriteImageResponse } from "pdf2pic/dist/types/convertResponse";
 
-export class PdfToImage {
+export class PdfToImage extends EmailService {
     type: string;
     utils: Utils;
     optionsPdfToImg: any;
 
     constructor() {
+        super();
         this.type = 'simple';
         this.optionsPdfToImg = {
             density: 100,
