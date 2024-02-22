@@ -14,9 +14,6 @@ const uploadS3 = multer({
 
 // Middleware para validar el tamaño del archivo
 const validateFileSize = (req: Request, res: Response, next: NextFunction) => {
-    if (req.method !== 'PUT' && !req.file) {
-        return deniedResponse(res, {}, 'No file in request.');
-    }
     if (req.file && req.file.size > 1000000) {
         return deniedResponse(res, {}, 'File size exceeds 1MB limit.');
     }

@@ -1,11 +1,10 @@
 import { Router } from "express";
-import { upload } from "../utils/storage";
-import { ProfileController } from "../controllers/profile.controller";
-import { updateProfileValidator, validateConfigurationData, validateProfileId } from "../validators/profile.validator";
 import sessionCheck from "../middlewares/session.middleware";
-import perMissionMiddleware from "../middlewares/permission.middleware";
 import { UserIdValidator } from "../validators/users.validator";
-
+import { uploadS3, validateFileSize } from "../utils/storage.s3";
+import { ProfileController } from "../controllers/profile.controller";
+import perMissionMiddleware from "../middlewares/permission.middleware";
+import { updateProfileValidator, validateConfigurationData, validateProfileId } from "../validators/profile.validator";
 // init router
 const router = Router();
 
@@ -35,7 +34,8 @@ router.post(
     '/image/change',
     sessionCheck,
     perMissionMiddleware('change-profile-pictury'),
-    upload.single('file'),
+    uploadS3.single('file'),
+    validateFileSize,
     validateProfileId,
     profileController.changeProfilePictury,
 );
