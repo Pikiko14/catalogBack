@@ -4,6 +4,7 @@ import { uploadS3, validateFileSize } from "../utils/storage.s3";
 import subscriptionCheck from "../middlewares/subscription.middleware";
 import perMissionMiddleware from '../middlewares/permission.middleware';
 import { CatalogueController } from '../controllers/catalogues.controller';
+import validateCatalogActive from "../middlewares/catalogActive.middleware";
 import { CreateCatalogueValidator, EmailValidator, IdCatalogueValidator } from "../validators/catalogues.validator";
 
 // init router
@@ -85,6 +86,7 @@ router.get('/activate/:id',
  */
 router.get('/show/:id',
     IdCatalogueValidator,
+    validateCatalogActive,
     controller.doListCatalog,
 );
 
