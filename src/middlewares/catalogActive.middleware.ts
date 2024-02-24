@@ -16,25 +16,24 @@ const validateCatalogActive = async (req: RequestExt, res: Response, next: NextF
         const { id } = req.params;
         const catalog = await CatalogueModel.findById(id);
         // validate if catalog is null
-        if (!catalog) {
-            return notFountResponse(res, id, 'Catalog id don´t found in our records');
-        }
-        // valdiate if catalog is active
-        if (!catalog.is_active) {
-            return deniedResponse(res, { error: 'not_active' }, "Catalog is not active.");
-        }
-        // valdiate if main user have any suscription active
-        const subscription = await subscriptionService.getSubscription('user_id', catalog.user_id as any, false);
-        if (!subscription) {
-            return deniedResponse(res, {}, "The user owner of this catalogue does not have an active subscription.");
-        }
-        // validate if subscription is expired
-        const now = utils.getDate();
-        const expiredAtSubscription = utils.getDateFromString(subscription.date_end as Date);
-        if (subscription && expiredAtSubscription <= now) {
-            const disable = await subscriptionService.disableSubscription(subscription.id as string);
-            if (disable) {
-                return deniedResponse(res, {}, "your subscription expired.");
+        if (catalog) {
+            // valdiate if catalog is active
+            if (!catalog.is_active) {
+                return deniedResponse(res, { error: 'not_active' }, "Catalog is not active.");
+            }
+            // valdiate if main user have any suscription active
+            const subscription = await subscriptionService.getSubscription('user_id', catalog.user_id as any, false);
+            if (!subscription) {
+                return deniedResponse(res, { no_subscription: true }, "The user owner of this catalogue does not have an active subscription.");
+            }
+            // validate if subscription is expired
+            const now = utils.getDate();
+            const expiredAtSubscription = utils.getDateFromString(subscription.date_end as Date);
+            if (subscription && expiredAtSubscription <= now) {
+                const disable = await subscriptionService.disableSubscription(subscription.id as string);
+                if (disable) {
+                    return deniedResponse(res, {}, "your subscription expired.");
+                }
             }
         }
         // pass middleware
