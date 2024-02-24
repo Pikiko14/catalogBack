@@ -84,6 +84,7 @@ const IdPlanValidator = [
         if (!existCatalogue) {
             throw new Error('Plan id dont´t exist in our records');
         }
+        return true;
     }),
     (req: Request, res: Response, next: NextFunction) => handlerValidator(req, res, next),
 ]; // id catalogue validator
@@ -103,6 +104,7 @@ const PlanIdValidator = [
         if (!existCatalogue) {
             throw new Error('Plan id dont´t exist in our records');
         }
+        return true;
     }),
     (req: Request, res: Response, next: NextFunction) => handlerValidator(req, res, next),
 ]; // id catalogue validator

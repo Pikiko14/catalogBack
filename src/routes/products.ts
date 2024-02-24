@@ -1,11 +1,12 @@
 import  { Router} from "express";
 import { upload } from "../utils/storage";
 import sessionCheck from "../middlewares/session.middleware";
+import { uploadS3, validateFilesSize } from "../utils/storage.s3";
 import subscriptionCheck from "../middlewares/subscription.middleware";
 import { ProductsController } from "../controllers/products.controller";
 import perMissionMiddleware from "../middlewares/permission.middleware";
 import parseBodyAttributesToJson from "../middlewares/parseBody.middleware";
-import { ProductCreateValidator, ProductMediaDefaulValidator, ProductUpdateValidator } from "../validators/products.validator";
+import { ProductArrayIdValidator, ProductCreateValidator, ProductMediaDefaulValidator, ProductUpdateValidator } from "../validators/products.validator";
 
 // init router
 const router = Router();
@@ -30,7 +31,8 @@ router.post(
     '/',
     sessionCheck,
     perMissionMiddleware('create-products'),
-    upload.array('file'),
+    uploadS3.array('file'),
+    validateFilesSize,
     parseBodyAttributesToJson('product'),
     ProductCreateValidator,
     subscriptionCheck,
@@ -44,7 +46,8 @@ router.put(
     '/:productId',
     sessionCheck,
     perMissionMiddleware('update-products'),
-    upload.array('file'),
+    uploadS3.array('file'),
+    validateFilesSize,
     parseBodyAttributesToJson('product'),
     ProductUpdateValidator,
     controller.updateProducts,
@@ -88,6 +91,23 @@ router.post(
 router.get(
     '/:productId/show',
     controller.showProductByFront,
+);
+
+/**
+ * added to cart products
+ */
+router.post(
+    '/add/to/cart',
+    ProductArrayIdValidator,
+    controller.addProductToCart,
+);
+
+/**
+ * search product
+ */
+router.get(
+    '/filter/front',
+    controller.filterProducts,
 );
 
 // export router

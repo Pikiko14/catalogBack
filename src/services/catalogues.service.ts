@@ -1,21 +1,26 @@
 import { Response } from "express";
 import { Utils } from "../utils/utils";
-import { UserService } from "./users.service.";
+import { QueueService } from "./queue.service";
+import { UserService } from "./users.service";
+import { ProfileService } from "./profiles.service";
+import mongoose, { ObjectId, mongo } from "mongoose";
 import CatalogueModel from "../models/catalogues.model";
+import { S3Service } from "../services/aws/s3/s3.service";
 import { Catalogue } from "../interfaces/catalogues.interface";
 import { ResponseInterface } from "../interfaces/response.interface";
-import { successResponse, errorResponse, createdResponse, notFountResponse } from "../utils/api.responser";
-import mongoose, { ObjectId, mongo } from "mongoose";
-import { ProfileService } from "./profiles.service";
+import { successResponse, errorResponse, createdResponse } from "../utils/api.responser";
 
-export class CatalogueService {
-    model: any = CatalogueModel;
+export class CatalogueService extends QueueService {
     utils: Utils;
+    s3Service: S3Service;
     userService: UserService;
+    model: any = CatalogueModel;
     profileService: ProfileService;
 
     constructor() {
+        super();
         this.utils = new Utils();
+        this.s3Service = new S3Service();
         this.userService = new UserService();
         this.profileService = new ProfileService();
     }
@@ -65,15 +70,19 @@ export class CatalogueService {
 
     /**
      * Create news catalogues
-     * @param {*} res
-     * @param {Catalogue} body
+     * @param { * } res
+     * @param { Catalogue } body
+     * @param { any } file
      */
     createCatalogue = async (
         res: Response,
-        body: Catalogue
+        body: Catalogue,
+        file: any
     ): Promise<Catalogue | ResponseInterface | void> => {
         try {
             // set dates
+            const fileS3 = await this.s3Service.uploadSingleObject(file); // upload file to aws s3
+            body.cover = `${fileS3}`;
             body.start_date = new Date(body.start_date);
             body.end_date = new Date(body.end_date);
             // create catalogue in bbdd
@@ -142,19 +151,29 @@ export class CatalogueService {
      * Create news catalogues
      * @param {*} res
      * @param {Catalogue} body
+     * @param { any } file
      */
     updateCatalogue = async (
         res: Response,
-        body: Catalogue
+        body: Catalogue,
+        file: any,
     ): Promise<Catalogue | ResponseInterface | void> => {
         try {
             // set dates
             body.start_date = new Date(body.start_date);
             body.end_date = new Date(body.end_date);
             // validate cover and delete old
-            if (body.cover) {
-                const catalog = await this.model.findOne({ _id: body.id });
-                await this.utils.deleteItemFromStorage(catalog.cover);
+            const catalog = await this.model.findOne({ _id: body.id });
+            if (catalog.cover && file) {
+                if (catalog.cover && catalog.cover.includes('.s3.us-east-2')) {
+                    const key: string = catalog.cover.split('/').pop();
+                    await this.s3Service.deleteSingleObject(key);
+                    // delete from local storage
+                } else {
+                    await this.utils.deleteItemFromStorage(catalog.cover); // delete cover from catalog
+                }
+                const fileS3 = await this.s3Service.uploadSingleObject(file); // upload file to aws s3
+                body.cover = `${fileS3}`;
             }
             // create catalogue in bbdd
             const catalogue: Catalogue = await this.model.findOneAndUpdate(
@@ -261,6 +280,31 @@ export class CatalogueService {
             return createdResponse(res, { catalogue, profile }, "Catalogue information");
         } catch (error) {
             return errorResponse(res, error, 'Error show catalogues');
+        }
+    }
+
+    /**
+     * Create news catalogues
+     * @param { * } res
+     * @param { ObjectId | string } catalogueId
+     * @param { any } body
+     */
+    downloadPdfAndSendEmail = async (res: Response, body: any): Promise<ResponseInterface | void> => {
+        try {
+            // filter catalogue
+            const catalogue = await this.model.findOne({ _id: body.id })
+            .populate('pages');
+            await this.myFirstQueue.add({
+                type: 'pdf',
+                email: body.email,
+                catalogue_id: body.id,
+                pages: catalogue.pages,
+                typeEmail: 'catalogue-download',
+            });
+            // reutrn response
+            return createdResponse(res, { catalogue }, "Download proccess catalogue started.");
+        } catch (error) {
+            throw error;
         }
     }
 }

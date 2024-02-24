@@ -76,4 +76,19 @@ export class CategoriesController {
             return errorResponse(res, error.message, 'Error create categories');
         }
     }
+
+    /**
+     * List categories by catalogue
+     * @param req
+     * @param res
+     * @returns
+     */
+    listCategoriesByCatalog = async (req: Request, res: Response) => {
+        try {
+            const { catalogue } = req.params;
+            await this.service.listCategoriesByCatalog(res, catalogue);
+        } catch (error: any) {
+            return errorResponse(res, error, error.message);
+        }
+    }
 }

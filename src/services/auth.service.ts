@@ -1,6 +1,6 @@
 import { Response } from "express";
 import { Utils } from "../utils/utils";
-import { UserService } from "./users.service."
+import { UserService } from "./users.service"
 import { User } from "../interfaces/users.interface";
 import { LoginInterface, LoginReturn } from "../interfaces/auth.interface";
 import { errorResponse, unProcesableEntityResponse, successResponse } from "../utils/api.responser";

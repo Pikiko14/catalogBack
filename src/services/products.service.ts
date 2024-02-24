@@ -1,16 +1,22 @@
 import { Utils } from "../utils/utils";
 import ProductModel from './../models/products.model';
-import { MediaProductInterface, ProductInterface, ProviderMediaEnum, TypeMediaEnum } from './../interfaces/products.interface';
 import { Response } from 'express';
+import PagesModel from "../models/pages.models";
+import { S3Service } from "./aws/s3/s3.service";
+import { Catalogue } from "../interfaces/catalogues.interface";
 import { errorResponse, notFountResponse, successResponse } from "../utils/api.responser";
+import { MediaProductInterface, ProductInterface, ProviderMediaEnum, TypeMediaEnum } from './../interfaces/products.interface';
 
 export class ProductsService {
-    model: any = ProductModel;
     utils: Utils;
+    model: any = ProductModel;
+    pagesModel: any = PagesModel;
+    s3Service: S3Service;
 
     constructor(
     ) {
         this.utils = new Utils();
+        this.s3Service = new S3Service();
     }
 
     /**
@@ -56,11 +62,11 @@ export class ProductsService {
             body.user_id = userId;
             let product = await this.model.create(body);
             // set images to products
-            const path = await this.utils.getPath('products');
             let i = 0;
-            for (const file of files) {
+            const filesArray = await this.s3Service.uploadMultipleFiles(files);
+            for (const file of filesArray) {
                 const data: MediaProductInterface = {
-                    path: `/${path}/${file.filename}`,
+                    path: file,
                     type: TypeMediaEnum.image,
                     provider: ProviderMediaEnum.owner,
                 }
@@ -222,7 +228,12 @@ export class ProductsService {
                 if (media.path === product.default_image?.path) {
                     deleteDefaultImg = true;
                 }
-                await this.utils.deleteItemFromStorage(media.path);
+                if (media.path && media.path.includes('.s3.us-east-2')) {
+                    const key: string = media.path.split('/').pop();
+                    await this.s3Service.deleteSingleObject(key);
+                } else {
+                    await this.utils.deleteItemFromStorage(media.path);
+                }
             }
             const mediasNoDeleteds = product.medias.filter((data: MediaProductInterface) => data.deleted !== true);
             const productBd = await this.model.findOneAndUpdate(
@@ -240,9 +251,9 @@ export class ProductsService {
      * @returns 
      */
     private async processNewMedia(files: any[]): Promise<MediaProductInterface[]> {
-        const path = await this.utils.getPath('products');
-        return files.map(file => ({
-            path: `/${path}/${file.filename}`,
+        const filesArray = await this.s3Service.uploadMultipleFiles(files);
+        return filesArray.map(file => ({
+            path: file,
             type: TypeMediaEnum.image,
             provider: ProviderMediaEnum.owner,
         }));
@@ -297,6 +308,104 @@ export class ProductsService {
                 );
             }
             return successResponse(res, product, 'Product show successfully');
+        } catch (error) {
+            throw error;
+        }
+    }
+
+    /**
+     * get product by id out user
+     * @param { string } productId
+     * @return { ProductInterface | void }
+     */
+    public async getProductByIdOutUser (productId: string): Promise<ProductInterface | any> {
+        const product = await this.model.findOne({ _id: productId }, 'id name default_image reference')
+        .populate({
+            path: 'categories',
+            select: 'name'
+        });
+        if (product) {
+            return product;
+        }
+        return null;
+    }
+
+    /**
+     * Delete product
+     * @param { Response } res
+     * @param { string[] } product
+     * @return
+     */
+    public async addProductToCart(res: Response, body: any) {
+        try {
+            // up added to cart on products
+            const results = await this.model.updateMany(
+                { _id: { $in: body.products } },
+                { $inc: { count_add_to_cart: 1 } }
+            );
+            // return data
+            return successResponse(res, results, 'Products added to cart successfully');
+        } catch (error) {
+            throw error;
+        }
+    }
+
+    /**
+     * add product more sell status
+     * @param { * } productIds 
+     */
+    public async addMoreSellStatus(productIds: string[]) {
+        try {
+            // up added to cart on products
+            const results = await this.model.updateMany(
+                { _id: { $in: productIds } },
+                { $inc: { count_order_finish: 1 } }
+            );
+            // return data
+            return results;
+        } catch (error) {
+            throw error;
+        }
+    }
+
+    /**
+     * Search product
+     * @param productName 
+     * @param catalogue_id 
+     * @param categories 
+     * @returns 
+     */
+    public async filterProducts(res: Response, productName: string, catalogue_id: string, categories: any): Promise<any> {
+        try {
+            let pages: string[] = [];
+            if (productName || categories) {
+                let productFilter: any = {};
+                // Si productName está definido, agregar filtro por nombre
+                if (productName) {
+                    productFilter.name = { $regex: productName, $options: 'i' };
+                }
+                // Si categories están definidas, agregar filtro por categorías
+                if (categories && categories.length > 0) {
+                    productFilter.categories = { $in: JSON.parse(categories) };
+                }
+                // Buscar productos que cumplan con los filtros
+                const products = await this.model.find(productFilter, '_id');
+                // Obtener los IDs de los productos encontrados
+                const productIds = products.map((product: ProductInterface) => product._id);
+                // Buscar las páginas que contienen los productos encontrados
+                pages = await this.pagesModel.find({ 'images.buttons.product': { $in: productIds }, catalogue_id: catalogue_id })
+                .populate({
+                    path: 'images.buttons.product',
+                    model: 'products', // Nombre del modelo de Productos
+                });
+            } else {
+                pages = await this.pagesModel.find({ catalogue_id: catalogue_id })
+                .populate({
+                    path: 'images.buttons.product',
+                    model: 'products', // Nombre del modelo de Productos
+                });
+            }
+            return successResponse(res, pages, 'Result data');
         } catch (error) {
             throw error;
         }

@@ -1,31 +1,25 @@
 import { Response } from "express";
+import { Utils } from "../utils/utils";
 import PagesModel from "../models/pages.models";
+import { CatalogueService } from './catalogues.service';
+import { S3Service } from "../services/aws/s3/s3.service";
 import { Images, PagesInterface } from "../interfaces/pages.interface";
 import { errorResponse, successResponse } from "../utils/api.responser";
 import { ResponseInterface } from "../interfaces/response.interface";
-import { CatalogueService } from './catalogues.service';
-import { fromPath } from "pdf2pic";
-import { Utils } from "../utils/utils";
-import { WriteImageResponse } from "pdf2pic/dist/types/convertResponse";
+import { QueueService } from "./queue.service";
 
 export class PagesService {
-    model: any = PagesModel;
-    catalogService: CatalogueService;
-    optionsPdfToImg: any;
     utils: Utils;
     type: string;
+    s3Service: S3Service;
+    model: any = PagesModel;
+    catalogService: CatalogueService;
 
     constructor() {
-        this.catalogService = new CatalogueService();
-        this.optionsPdfToImg = {
-            density: 100,
-            savePath: `${__dirname}../../../uploads/`,
-            format: 'png',
-            width: 500,
-            height: 720
-        };
-        this.utils = new Utils();
         this.type = 'simple';
+        this.utils = new Utils();
+        this.s3Service = new S3Service();
+        this.catalogService = new CatalogueService();
     }
 
     /**
@@ -81,10 +75,10 @@ export class PagesService {
             const page: PagesInterface | any = await this.model.create(body); // create page on bbdd
             // proces files images
             let controll = 1;
-            const path = await this.utils.getPath('images');
-            for (const file of files) {
+            const filesArray = await this.s3Service.uploadMultipleFiles(files);
+            for (const file of filesArray) {
                 const data: Images = {
-                    path: `/${path}/${file.filename}`,
+                    path: file,
                     order: controll,
                     buttons: []
                 }
@@ -150,34 +144,16 @@ export class PagesService {
      */
     importPages = async (res: Response, body: any, file: any) => {
         try {
-            const path = await this.utils.getPath('images'); // get user path
-            this.optionsPdfToImg.savePath = `${this.optionsPdfToImg.savePath}/${path}/`; // edit path to save
-            this.optionsPdfToImg.saveFilename = `img_catalog_${body.catalogId}_${new Date().getTime().toString()}`;
-            const convert = fromPath(file.path, this.optionsPdfToImg); // conver images...
-            const results = await convert.bulk(-1, { responseType: "image" }); // get images array
-            // generamos la pagina del catalogo en base a cada imagen convertida
-            if (results.length > 0) {
-                results.map(async (data: WriteImageResponse, index: number) => {
-                    const pageDate: PagesInterface = {
-                        number: (index + 1) as number,
-                        type: this.type,
-                        catalogue_id: body.catalogId,
-                        images: []
-                    } 
-                    const image = {
-                        path: `/${path}/${data.name}`,
-                        order: index + 1,
-                        buttons: []
-                    }
-                    pageDate.images.push(image);
-                    const page = await this.model.create(pageDate);
-                    await this.catalogService.pushPage(res,  body.catalogId, page._id);
-                })
-            }
-            await this.utils.deleteItemFromStorage(`pdfs/${file.filename}`);
-            this.optionsPdfToImg.savePath = `${__dirname}../../../uploads/`;
+            // do queue job for process pdf
+            const queueService = new QueueService();
+            queueService.myFirstQueue.add({
+                type: 'page',
+                file,
+                action: 'process-pdf-to-image',
+                catalogue_id: body.catalogId
+            });
             // return data
-            return successResponse(res, results, 'Catalogue page imported success');
+            return successResponse(res, { file }, 'The catalog import process has started successfully. If everything goes well, the pages will appear shortly.');
         } catch (error) {
             return errorResponse(res, error, 'Error on import catalogue pages.');
         }
@@ -223,6 +199,19 @@ export class PagesService {
             return successResponse(res, page, 'buttons configured correctly');
         } catch (error) {
             return error;
+        }
+    }
+
+    /**
+     * save page from pdf
+     * @param { * } page
+     */
+    savePageFromPdfToImg = async (page: PagesInterface) => {
+        try {
+            const pageBd: PagesInterface = await this.model.create(page);
+            return pageBd;
+        } catch (error: any) {
+            throw error.message;
         }
     }
 }
