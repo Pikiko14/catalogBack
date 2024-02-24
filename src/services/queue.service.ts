@@ -65,7 +65,7 @@ export class QueueService {
                 }
                 done();
             } catch (error) {
-                console.error('Error al generar el PDF:', error);
+                console.error('Error al ejecutar el job:', error);
             }
         });
     }
