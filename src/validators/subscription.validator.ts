@@ -17,6 +17,7 @@ const CreateSubscriptionValidadotr = [
         if (!enumEntries.includes(billing_period)) {
             throw new Error(`Type billing_period be in (${enumEntries})`);
         }
+        return true;
     }),
     (req: Request, res: Response, next: NextFunction) => handlerValidator(req, res, next),
 ]

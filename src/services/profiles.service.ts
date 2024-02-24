@@ -1,19 +1,22 @@
 import { Response } from "express";
 import { ObjectId } from "mongoose";
 import { Utils } from "../utils/utils";
+import { S3Service } from "./aws/s3/s3.service";
 import ProfileModel from "../models/profile.model";
 import { SubscriptionService } from "./subscriptions.service";
 import { ProfileInterface } from './../interfaces/profile.interface';
 import { errorResponse, notFountResponse, successResponse } from "../utils/api.responser";
 
 export class ProfileService {
-    model: any = ProfileModel;
     utils: Utils;
+    s3Service: S3Service;
+    model: any = ProfileModel;
     subscriptionService: SubscriptionService;
 
     constructor(
     ) {
         this.utils = new Utils();
+        this.s3Service = new S3Service();
         this.subscriptionService = new SubscriptionService();
     }
 
@@ -118,11 +121,19 @@ export class ProfileService {
             const profile = await this.model.findOne({ _id: profileId });
             // validate if have profile pictury custom
             if (profile.profile_pictury !== 'profile.webp') {
-                this.utils.deleteItemFromStorage(`profile/${profile.profile_pictury}`)
+                if (profile.profile_pictury && profile.profile_pictury.includes('.s3.us-east-2')) {
+                    const key: string = profile.profile_pictury.split('/').pop();
+                    await this.s3Service.deleteSingleObject(key);
+                } else {
+                    this.utils.deleteItemFromStorage(`profile/${profile.profile_pictury}`)
+                }
             }
-            // set new profile img
-            profile.profile_pictury = file.filename;
-            await profile.save();
+            // set new profile pictury
+            if (file) {
+                const fileS3 = await this.s3Service.uploadSingleObject(file);
+                profile.profile_pictury = fileS3;
+                await profile.save();
+            }
             // return data
             return successResponse(res, profile, 'Profile pictury change success');
         } catch (error) {

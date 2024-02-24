@@ -1,10 +1,11 @@
 import  { Router} from "express";
-import { upload } from "../utils/storage";
 import sessionCheck from "../middlewares/session.middleware";
+import { uploadS3, validateFileSize } from "../utils/storage.s3";
+import subscriptionCheck from "../middlewares/subscription.middleware";
 import perMissionMiddleware from '../middlewares/permission.middleware';
 import { CatalogueController } from '../controllers/catalogues.controller';
-import { CreateCatalogueValidator, IdCatalogueValidator } from "../validators/catalogues.validator";
-import subscriptionCheck from "../middlewares/subscription.middleware";
+import validateCatalogActive from "../middlewares/catalogActive.middleware";
+import { CreateCatalogueValidator, EmailValidator, IdCatalogueValidator } from "../validators/catalogues.validator";
 
 // init router
 const router = Router();
@@ -28,9 +29,10 @@ router.get('/',
  */
 router.post('/',
     sessionCheck,
-    subscriptionCheck,
     perMissionMiddleware('create-catalogues'),
-    upload.single('cover'),
+    uploadS3.single('cover'),
+    validateFileSize,
+    subscriptionCheck,
     CreateCatalogueValidator,
     controller.createCatalogue
 );
@@ -52,7 +54,8 @@ router.put('/:id',
     sessionCheck,
     perMissionMiddleware('update-catalogues'),
     IdCatalogueValidator,
-    upload.single('cover'),
+    uploadS3.single('cover'),
+    validateFileSize,
     CreateCatalogueValidator,
     controller.updateCatalogue
 );
@@ -79,11 +82,21 @@ router.get('/activate/:id',
 );
 
 /**
- * Activate catalogs
+ * list  catalogs fron clients
  */
 router.get('/show/:id',
     IdCatalogueValidator,
+    validateCatalogActive,
     controller.doListCatalog,
+);
+
+/**
+ * download pdf and send email
+ */
+router.post('/download/pdf',
+    IdCatalogueValidator,
+    EmailValidator,
+    controller.downloadPdfAndSendEmail,
 );
 
 // export router

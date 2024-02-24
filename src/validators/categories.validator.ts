@@ -45,6 +45,7 @@ const CategoryIdValidator = [
         if (!existCategory) {
             throw new Error('Category id dont´t exist in our records');
         }
+        return true;
     }),
     (req: Request, res: Response, next: NextFunction) => {
         const errors = validationResult(req);

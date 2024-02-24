@@ -1,9 +1,9 @@
 import { Response, Request } from "express";
 import { matchedData  } from "express-validator"; 
 import { errorResponse } from "../utils/api.responser";
+import { S3Service } from "../services/aws/s3/s3.service";
 import { Catalogue } from "../interfaces/catalogues.interface";
 import { CatalogueService } from "../services/catalogues.service";
-import { RequestExt } from "../interfaces/req-ext";
 
 
 export class CatalogueController {
@@ -12,7 +12,7 @@ export class CatalogueController {
 
     constructor() {
         this.service = new CatalogueService();
-        this.publicPath = 'catalogues'
+        this.publicPath = 'catalogues';
     }
 
     /**
@@ -44,10 +44,9 @@ export class CatalogueController {
     createCatalogue = async (req: Request | any, res: Response) => {
         try {
             const body = matchedData(req) as Catalogue; // get body clean
-            body.cover = `/${this.publicPath}/${req.file.filename}`;
-            const { _id, parent } = req.user; // get user loged id
+            const { _id, parent } = req.user; // get user logged id
             body.user_id = parent ? parent : _id; // set  main user id
-            await this.service.createCatalogue(res, body);
+            await this.service.createCatalogue(res, body, req.file);
         } catch (error) {
             return errorResponse(res, error, 'Error creating catalogues.');
         }
@@ -75,11 +74,7 @@ export class CatalogueController {
      updateCatalogue = async (req: Request | any, res: Response) => {
         try {
             const body = matchedData(req) as Catalogue; // get body clean
-            if (req.file) { 
-                body.cover = `/${this.publicPath}/${req.file.filename}`;
-            }
-            const { id } = req.params; // get id param in request
-            await this.service.updateCatalogue(res, body);
+            await this.service.updateCatalogue(res, body, req.file);
         } catch (error) {
             return errorResponse(res, error, 'Error on update catalogue');
         }
@@ -124,6 +119,20 @@ export class CatalogueController {
             await this.service.doListCatalog(res, id);
         } catch (error) {
             return errorResponse(res, error, 'Error on listing catalogue');
+        }
+    }
+
+    /**
+     * download excel and send by email
+     * @param {Request} req
+     * @param {Response} res
+     */
+    downloadPdfAndSendEmail = async (req: Request, res: Response) => {
+        try {
+            const body = matchedData(req);
+            await this.service.downloadPdfAndSendEmail(res, body);
+        } catch (error: any) {
+            return errorResponse(res, error.message, 'Error on download catalogue');
         }
     }
 }

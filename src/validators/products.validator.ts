@@ -416,6 +416,31 @@ const ProductMediaDefaulValidator = [
     (req: Request, res: Response, next: NextFunction) => handlerValidator(req, res, next),
 ];
 
+/**
+ * Validate array id products
+ */
+const ProductArrayIdValidator = [
+    check('products')
+        .optional()
+        .isArray()
+        .withMessage('products must be a array value')
+        .custom(async (values: string[]) => {
+            // valdiate if is array products id
+            if (typeof values !== 'object') {
+                throw new Error('Product must be a product id array');
+            }
+            // validate if item in array is string
+            for (const productId of values) {
+                const issetProduct = await productService.getProductByIdOutUser(productId);
+                if (!issetProduct) {
+                    throw new Error(`Product id ${productId} don´t exists on our record`);
+                }
+            }
+            return true;
+        }),
+    (req: Request, res: Response, next: NextFunction) => handlerValidator(req, res, next),
+];
+
 // validate references duplicates
 function validateDuplicates(arr: any) {
     const seenReferences = new Set();
@@ -443,5 +468,6 @@ export {
     ProductCreateValidator,
     validateDuplicates,
     ProductUpdateValidator,
+    ProductArrayIdValidator,
     ProductMediaDefaulValidator,
 }
