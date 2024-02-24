@@ -1,6 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.IdCatalogueValidator = exports.CreateCatalogueValidator = void 0;
+exports.EmailValidator = exports.IdCatalogueValidator = exports.CreateCatalogueValidator = void 0;
 const express_validator_1 = require("express-validator");
 const handler_validator_1 = require("../utils/handler.validator");
 const catalogues_service_1 = require("../services/catalogues.service");
@@ -60,7 +60,23 @@ const IdCatalogueValidator = [
         if (!existCatalogue) {
             throw new Error('Catalogue id dont´t exist in our records');
         }
+        return true;
     }),
     (req, res, next) => (0, handler_validator_1.handlerValidator)(req, res, next),
 ]; // id catalogue validator
 exports.IdCatalogueValidator = IdCatalogueValidator;
+const EmailValidator = [
+    (0, express_validator_1.check)('email')
+        .exists()
+        .withMessage('Email does not exist')
+        .notEmpty()
+        .withMessage('Email is empty')
+        .isString()
+        .withMessage('Email must be a string')
+        .isEmail()
+        .withMessage('Invalid email format')
+        .isLength({ min: 5, max: 90 })
+        .withMessage('Email must have a minimum of 5 characters'),
+    (req, res, next) => (0, handler_validator_1.handlerValidator)(req, res, next),
+];
+exports.EmailValidator = EmailValidator;

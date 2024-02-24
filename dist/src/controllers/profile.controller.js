@@ -50,6 +50,21 @@ class ProfileController {
                 return (0, api_responser_1.errorResponse)(res, error, 'Error change profile pictury.');
             }
         };
+        /**
+         * Create or uptate profile
+         * @param { Request } req
+         * @param { Response } res
+         */
+        this.setConfigurationOnProfile = async (req, res) => {
+            try {
+                const body = (0, express_validator_1.matchedData)(req);
+                const { profile } = req.params;
+                await this.service.setConfigurationOnProfile(res, body, profile);
+            }
+            catch (error) {
+                return (0, api_responser_1.errorResponse)(res, error, 'Error updating profile.');
+            }
+        };
         this.service = new profiles_service_1.ProfileService();
     }
 }

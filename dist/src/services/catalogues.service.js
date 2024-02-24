@@ -5,11 +5,15 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.CatalogueService = void 0;
 const utils_1 = require("../utils/utils");
-const users_service_1 = require("./users.service.");
+const queue_service_1 = require("./queue.service");
+const users_service_1 = require("./users.service");
+const profiles_service_1 = require("./profiles.service");
 const catalogues_model_1 = __importDefault(require("../models/catalogues.model"));
+const s3_service_1 = require("../services/aws/s3/s3.service");
 const api_responser_1 = require("../utils/api.responser");
-class CatalogueService {
+class CatalogueService extends queue_service_1.QueueService {
     constructor() {
+        super();
         this.model = catalogues_model_1.default;
         /**
          * List catalogues by user
@@ -39,10 +43,10 @@ class CatalogueService {
                 // do query
                 const catalogues = await this.model.find(query).skip(skip).limit(perPage);
                 // Count model by user
-                const totalUsers = await this.model.countDocuments().merge(query);
-                const totalPages = Math.ceil(totalUsers / perPage);
+                const totalCatalogs = await this.model.countDocuments().merge(query);
+                const totalPages = Math.ceil(totalCatalogs / perPage);
                 // return data 
-                return (0, api_responser_1.successResponse)(res, { catalogues, totalPages }, "List catalogues."); // return data
+                return (0, api_responser_1.successResponse)(res, { catalogues, totalPages, totalCatalogs }, "List catalogues."); // return data
             }
             catch (error) {
                 return (0, api_responser_1.errorResponse)(res, error, 'Error listing catalogues.');
@@ -50,12 +54,15 @@ class CatalogueService {
         };
         /**
          * Create news catalogues
-         * @param {*} res
-         * @param {Catalogue} body
+         * @param { * } res
+         * @param { Catalogue } body
+         * @param { any } file
          */
-        this.createCatalogue = async (res, body) => {
+        this.createCatalogue = async (res, body, file) => {
             try {
                 // set dates
+                const fileS3 = await this.s3Service.uploadSingleObject(file); // upload file to aws s3
+                body.cover = `${fileS3}`;
                 body.start_date = new Date(body.start_date);
                 body.end_date = new Date(body.end_date);
                 // create catalogue in bbdd
@@ -117,16 +124,26 @@ class CatalogueService {
          * Create news catalogues
          * @param {*} res
          * @param {Catalogue} body
+         * @param { any } file
          */
-        this.updateCatalogue = async (res, body) => {
+        this.updateCatalogue = async (res, body, file) => {
             try {
                 // set dates
                 body.start_date = new Date(body.start_date);
                 body.end_date = new Date(body.end_date);
                 // validate cover and delete old
-                if (body.cover) {
-                    const catalog = await this.model.findOne({ _id: body.id });
-                    await this.utils.deleteItemFromStorage(catalog.cover);
+                const catalog = await this.model.findOne({ _id: body.id });
+                if (catalog.cover && file) {
+                    if (catalog.cover && catalog.cover.includes('.s3.us-east-2')) {
+                        const key = catalog.cover.split('/').pop();
+                        await this.s3Service.deleteSingleObject(key);
+                        // delete from local storage
+                    }
+                    else {
+                        await this.utils.deleteItemFromStorage(catalog.cover); // delete cover from catalog
+                    }
+                    const fileS3 = await this.s3Service.uploadSingleObject(file); // upload file to aws s3
+                    body.cover = `${fileS3}`;
                 }
                 // create catalogue in bbdd
                 const catalogue = await this.model.findOneAndUpdate({
@@ -194,8 +211,59 @@ class CatalogueService {
                 return (0, api_responser_1.errorResponse)(res, error, 'Error activating catalogues');
             }
         };
+        /**
+         * Create news catalogues
+         * @param {*} res
+         * @param {ObjectId | string} catalogueId
+         */
+        this.doListCatalog = async (res, catalogueId) => {
+            try {
+                // filter catalogue
+                const catalogue = await this.model.findOne({ _id: catalogueId })
+                    .populate({
+                    path: 'pages',
+                    populate: {
+                        path: 'images.buttons.product',
+                        model: 'products',
+                    },
+                });
+                const profile = await this.profileService.getProfileByUserId(catalogue.user_id);
+                // reutrn response
+                return (0, api_responser_1.createdResponse)(res, { catalogue, profile }, "Catalogue information");
+            }
+            catch (error) {
+                return (0, api_responser_1.errorResponse)(res, error, 'Error show catalogues');
+            }
+        };
+        /**
+         * Create news catalogues
+         * @param { * } res
+         * @param { ObjectId | string } catalogueId
+         * @param { any } body
+         */
+        this.downloadPdfAndSendEmail = async (res, body) => {
+            try {
+                // filter catalogue
+                const catalogue = await this.model.findOne({ _id: body.id })
+                    .populate('pages');
+                await this.myFirstQueue.add({
+                    type: 'pdf',
+                    email: body.email,
+                    catalogue_id: body.id,
+                    pages: catalogue.pages,
+                    typeEmail: 'catalogue-download',
+                });
+                // reutrn response
+                return (0, api_responser_1.createdResponse)(res, { catalogue }, "Download proccess catalogue started.");
+            }
+            catch (error) {
+                throw error;
+            }
+        };
         this.utils = new utils_1.Utils();
+        this.s3Service = new s3_service_1.S3Service();
         this.userService = new users_service_1.UserService();
+        this.profileService = new profiles_service_1.ProfileService();
     }
 }
 exports.CatalogueService = CatalogueService;

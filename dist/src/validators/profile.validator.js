@@ -1,11 +1,11 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.validateProfileId = exports.updateProfileValidator = void 0;
+exports.validateConfigurationData = exports.updateProfileValidator = exports.validateProfileId = void 0;
 const express_validator_1 = require("express-validator");
 const handler_validator_1 = require("../utils/handler.validator");
 const profiles_service_1 = require("../services/profiles.service");
 const profile_interface_1 = require("../interfaces/profile.interface");
-const users_service_1 = require("../services/users.service.");
+const users_service_1 = require("../services/users.service");
 // service
 const userService = new users_service_1.UserService();
 const profileService = new profiles_service_1.ProfileService();
@@ -23,6 +23,7 @@ const updateProfileValidator = [
         if (existBrandName && existBrandName.user_id.toString() !== user_id) {
             throw new Error('Brand name exist in our records');
         }
+        return true;
     }),
     (0, express_validator_1.check)('phone_number')
         .optional()
@@ -48,16 +49,6 @@ const updateProfileValidator = [
         .withMessage('Address must be string')
         .isLength({ min: 5, max: 90 })
         .withMessage('Address must be min 5 characters and max 90 characters'),
-    // check('website')
-    //     .optional()
-    //     .isString()
-    //     .withMessage('Website must be string')
-    //     .matches(/^(https?|ftp):\/\/[^\s/$.?#].[^\s]*$/)
-    //     .withMessage('URL must be a valid URL'),
-    (0, express_validator_1.check)("type_slider")
-        .optional()
-        .custom(isEnum)
-        .withMessage(`Invalid enum value in characteristics methods field, available ${Object.values(profile_interface_1.TypeSlider)}.`),
     (0, express_validator_1.check)('user_id')
         .notEmpty()
         .withMessage('User id cannot be empty.')
@@ -68,6 +59,7 @@ const updateProfileValidator = [
         if (!existUser) {
             throw new Error('User id dont´t exist in our records');
         }
+        return true;
     }),
     // pass validator
     (req, res, next) => (0, handler_validator_1.handlerValidator)(req, res, next),
@@ -89,10 +81,32 @@ const validateProfileId = [
         if (!existUser) {
             throw new Error('Profile id dont´t exist in our records');
         }
+        return true;
     }),
     (req, res, next) => (0, handler_validator_1.handlerValidator)(req, res, next),
 ];
 exports.validateProfileId = validateProfileId;
+// validate configuration data
+const validateConfigurationData = [
+    (0, express_validator_1.check)("brand_color")
+        .optional()
+        .isLength({ min: 0, max: 8 })
+        .withMessage('Brand color must be min 6 characters and max 8 characters')
+        .matches(/^#(?:[0-9a-fA-F]{3}){1,2}$/)
+        .withMessage('Brand color must be hexadecimal color string like (#FFFFFF)'),
+    (0, express_validator_1.check)("whatsapp_message")
+        .optional()
+        .isLength({ min: 1, max: 1000 })
+        .withMessage('Whatsapp message must be min 1 characters and max 1000 characters')
+        .matches(/{{\s*order\s*}}.*{{\s*total\s*}}|{{\s*total\s*}}.*{{\s*order\s*}}/)
+        .withMessage('The text must contain {{ order }} and {{ total }} in order to display shopping cart information'),
+    (0, express_validator_1.check)("type_slider")
+        .optional()
+        .custom(isEnum)
+        .withMessage(`Invalid enum value in characteristics methods field, available ${Object.values(profile_interface_1.TypeSlider)}.`),
+    (req, res, next) => (0, handler_validator_1.handlerValidator)(req, res, next),
+];
+exports.validateConfigurationData = validateConfigurationData;
 function isEnum(value) {
     return Object.values(profile_interface_1.TypeSlider).includes(value);
 }

@@ -23,11 +23,14 @@ var __importStar = (this && this.__importStar) || function (mod) {
     return result;
 };
 Object.defineProperty(exports, "__esModule", { value: true });
+const mongodb_1 = require("mongodb");
 const utils_1 = require("../utils/utils");
 const mongoose_1 = __importStar(require("mongoose"));
+const s3_service_1 = require("../services/aws/s3/s3.service");
 const products_interface_1 = require("../interfaces/products.interface");
 // instances
 const utils = new utils_1.Utils();
+const s3Service = new s3_service_1.S3Service();
 // schemas
 const PricesSchema = new mongoose_1.Schema({
     value: {
@@ -175,7 +178,13 @@ ProductsSchema.pre('findOneAndDelete', { document: true, query: true }, async fu
     const product = await this.model.findOne(this.getQuery()).exec();
     try {
         for (const media of product.medias) {
-            await utils.deleteItemFromStorage(media.path);
+            if (media.path && media.path.includes('.s3.us-east-2')) {
+                const key = media.path.split('/').pop();
+                await s3Service.deleteSingleObject(key);
+            }
+            else {
+                await utils.deleteItemFromStorage(media.path);
+            }
         }
         next();
     }
@@ -183,6 +192,48 @@ ProductsSchema.pre('findOneAndDelete', { document: true, query: true }, async fu
         next(error);
     }
 });
+ProductsSchema.statics.getTopAddedToCartByUser = async function (user_id) {
+    try {
+        const result = await this.aggregate([
+            { $match: { user_id: new mongodb_1.ObjectId(user_id) } }, // filter for user id
+            { $sort: { count_add_to_cart: -1 } }, // sort by attribute desc
+            { $limit: 5 }, // limit query
+            {
+                $project: {
+                    name: 1,
+                    count_add_to_cart: {
+                        $ifNull: ["$count_add_to_cart", 0] // condiftion for attribute count
+                    }
+                }
+            }
+        ]);
+        return result;
+    }
+    catch (error) {
+        throw error;
+    }
+};
+ProductsSchema.statics.getTopSoldByUser = async function (user_id) {
+    try {
+        const result = await this.aggregate([
+            { $match: { user_id: new mongodb_1.ObjectId(user_id) } },
+            { $sort: { count_order_finish: -1 } },
+            { $limit: 5 },
+            {
+                $project: {
+                    name: 1,
+                    count_order_finish: {
+                        $ifNull: ["$count_order_finish", 0] // condiftion for attribute count
+                    }
+                }
+            }
+        ]);
+        return result;
+    }
+    catch (error) {
+        throw error;
+    }
+};
 // compile model
 const ProductModel = (0, mongoose_1.model)('products', ProductsSchema);
 exports.default = ProductModel;

@@ -2,7 +2,7 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.AuthService = void 0;
 const utils_1 = require("../utils/utils");
-const users_service_1 = require("./users.service.");
+const users_service_1 = require("./users.service");
 const api_responser_1 = require("../utils/api.responser");
 class AuthService {
     constructor() {

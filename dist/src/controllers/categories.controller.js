@@ -15,8 +15,9 @@ class CategoriesController {
         this.createCategories = async (req, res) => {
             try {
                 const { user } = req;
+                const file = req.file;
                 const body = (0, express_validator_1.matchedData)(req);
-                await this.service.createCategories(res, { user, body });
+                await this.service.createCategories(res, { user, body, file });
             }
             catch (error) {
                 return (0, api_responser_1.errorResponse)(res, error.message, 'Error create categories');
@@ -47,8 +48,9 @@ class CategoriesController {
         this.updateCategories = async (req, res) => {
             try {
                 const { id } = req.params;
+                const file = req.file;
                 const body = (0, express_validator_1.matchedData)(req);
-                await this.service.updateCategories(res, id, body);
+                await this.service.updateCategories(res, id, body, file);
             }
             catch (error) {
                 return (0, api_responser_1.errorResponse)(res, error.message, 'Error create categories');
@@ -67,6 +69,21 @@ class CategoriesController {
             }
             catch (error) {
                 return (0, api_responser_1.errorResponse)(res, error.message, 'Error create categories');
+            }
+        };
+        /**
+         * List categories by catalogue
+         * @param req
+         * @param res
+         * @returns
+         */
+        this.listCategoriesByCatalog = async (req, res) => {
+            try {
+                const { catalogue } = req.params;
+                await this.service.listCategoriesByCatalog(res, catalogue);
+            }
+            catch (error) {
+                return (0, api_responser_1.errorResponse)(res, error, error.message);
             }
         };
         this.service = new categories_service_1.CategoriesService();

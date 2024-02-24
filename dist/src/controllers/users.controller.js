@@ -2,7 +2,7 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.UsersController = void 0;
 const api_responser_1 = require("../utils/api.responser");
-const users_service_1 = require("../services/users.service.");
+const users_service_1 = require("../services/users.service");
 const express_validator_1 = require("express-validator");
 // instances of clases
 class UsersController {

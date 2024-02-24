@@ -9,10 +9,11 @@ const storage_1 = require("../utils/storage");
 const session_middleware_1 = __importDefault(require("../middlewares/session.middleware"));
 const pages_validator_1 = require("../validators/pages.validator");
 const pages_controller_1 = require("../controllers/pages.controller");
-const pages_validator_2 = require("../validators/pages.validator");
+const storage_s3_1 = require("../utils/storage.s3");
+const subscription_middleware_1 = __importDefault(require("../middlewares/subscription.middleware"));
 const permission_middleware_1 = __importDefault(require("../middlewares/permission.middleware"));
 const catalogues_validator_1 = require("../validators/catalogues.validator");
-const subscription_middleware_1 = __importDefault(require("../middlewares/subscription.middleware"));
+const pages_validator_2 = require("../validators/pages.validator");
 // init router
 const router = (0, express_1.Router)();
 exports.router = router;
@@ -26,7 +27,7 @@ router.get('/catalogue/:id', session_middleware_1.default, (0, permission_middle
 /**
  * Post new page
  */
-router.post('/', session_middleware_1.default, subscription_middleware_1.default, (0, permission_middleware_1.default)('create-pages'), storage_1.upload.array('file'), pages_validator_2.PagesCreationValidator, controller.createPages);
+router.post('/', session_middleware_1.default, (0, permission_middleware_1.default)('create-pages'), storage_s3_1.uploadS3.array('file'), storage_s3_1.validateFilesSize, subscription_middleware_1.default, pages_validator_2.PagesCreationValidator, controller.createPages);
 /**
  * show one page from catalogs
  */

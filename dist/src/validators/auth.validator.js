@@ -2,7 +2,7 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.LoginValidator = exports.RegisterValidator = void 0;
 const express_validator_1 = require("express-validator");
-const users_service_1 = require("../services/users.service.");
+const users_service_1 = require("../services/users.service");
 const handler_validator_1 = require("../utils/handler.validator");
 // instanciate all class neccesaries
 const userService = new users_service_1.UserService();
@@ -22,6 +22,7 @@ const RegisterValidator = [
         if (existUser) {
             throw new Error('Username exist in our records');
         }
+        return true;
     }),
     (0, express_validator_1.check)('password')
         .exists()
@@ -70,6 +71,7 @@ const RegisterValidator = [
         if (existEmail) {
             throw new Error('Email exist in our records');
         }
+        return true;
     }),
     (req, res, next) => (0, handler_validator_1.handlerValidator)(req, res, next),
 ];
@@ -89,6 +91,7 @@ const LoginValidator = [
         if (!existUser) {
             throw new Error('Username dont´t exist in our records');
         }
+        return true;
     }),
     (0, express_validator_1.check)('password')
         .exists()

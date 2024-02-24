@@ -4,11 +4,12 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.PagesService = void 0;
-const pages_models_1 = __importDefault(require("../models/pages.models"));
-const api_responser_1 = require("../utils/api.responser");
-const catalogues_service_1 = require("./catalogues.service");
-const pdf2pic_1 = require("pdf2pic");
 const utils_1 = require("../utils/utils");
+const pages_models_1 = __importDefault(require("../models/pages.models"));
+const catalogues_service_1 = require("./catalogues.service");
+const s3_service_1 = require("../services/aws/s3/s3.service");
+const api_responser_1 = require("../utils/api.responser");
+const queue_service_1 = require("./queue.service");
 class PagesService {
     constructor() {
         this.model = pages_models_1.default;
@@ -56,10 +57,10 @@ class PagesService {
                 const page = await this.model.create(body); // create page on bbdd
                 // proces files images
                 let controll = 1;
-                const path = await this.utils.getPath('images');
-                for (const file of files) {
+                const filesArray = await this.s3Service.uploadMultipleFiles(files);
+                for (const file of filesArray) {
                     const data = {
-                        path: `/${path}/${file.filename}`,
+                        path: file,
                         order: controll,
                         buttons: []
                     };
@@ -124,34 +125,16 @@ class PagesService {
          */
         this.importPages = async (res, body, file) => {
             try {
-                const path = await this.utils.getPath('images'); // get user path
-                this.optionsPdfToImg.savePath = `${this.optionsPdfToImg.savePath}/${path}/`; // edit path to save
-                this.optionsPdfToImg.saveFilename = `img_catalog_${body.catalogId}_${new Date().getTime().toString()}`;
-                const convert = (0, pdf2pic_1.fromPath)(file.path, this.optionsPdfToImg); // conver images...
-                const results = await convert.bulk(-1, { responseType: "image" }); // get images array
-                // generamos la pagina del catalogo en base a cada imagen convertida
-                if (results.length > 0) {
-                    results.map(async (data, index) => {
-                        const pageDate = {
-                            number: (index + 1),
-                            type: this.type,
-                            catalogue_id: body.catalogId,
-                            images: []
-                        };
-                        const image = {
-                            path: `/${path}/${data.name}`,
-                            order: index + 1,
-                            buttons: []
-                        };
-                        pageDate.images.push(image);
-                        const page = await this.model.create(pageDate);
-                        await this.catalogService.pushPage(res, body.catalogId, page._id);
-                    });
-                }
-                await this.utils.deleteItemFromStorage(`pdfs/${file.filename}`);
-                this.optionsPdfToImg.savePath = `${__dirname}../../../uploads/`;
+                // do queue job for process pdf
+                const queueService = new queue_service_1.QueueService();
+                queueService.myFirstQueue.add({
+                    type: 'page',
+                    file,
+                    action: 'process-pdf-to-image',
+                    catalogue_id: body.catalogId
+                });
                 // return data
-                return (0, api_responser_1.successResponse)(res, results, 'Catalogue page imported success');
+                return (0, api_responser_1.successResponse)(res, { file }, 'The catalog import process has started successfully. If everything goes well, the pages will appear shortly.');
             }
             catch (error) {
                 return (0, api_responser_1.errorResponse)(res, error, 'Error on import catalogue pages.');
@@ -182,6 +165,7 @@ class PagesService {
          */
         this.setButtonOnpage = async (res, body, pageId) => {
             try {
+                // save page
                 const page = await this.model.findOneAndUpdate({
                     _id: pageId
                 }, {
@@ -189,22 +173,29 @@ class PagesService {
                 }, {
                     new: true
                 });
-                return (0, api_responser_1.successResponse)(res, page, 'Buttons set success');
+                return (0, api_responser_1.successResponse)(res, page, 'buttons configured correctly');
             }
             catch (error) {
                 return error;
             }
         };
-        this.catalogService = new catalogues_service_1.CatalogueService();
-        this.optionsPdfToImg = {
-            density: 100,
-            savePath: `${__dirname}../../../uploads/`,
-            format: 'png',
-            width: 500,
-            height: 720
+        /**
+         * save page from pdf
+         * @param { * } page
+         */
+        this.savePageFromPdfToImg = async (page) => {
+            try {
+                const pageBd = await this.model.create(page);
+                return pageBd;
+            }
+            catch (error) {
+                throw error.message;
+            }
         };
-        this.utils = new utils_1.Utils();
         this.type = 'simple';
+        this.utils = new utils_1.Utils();
+        this.s3Service = new s3_service_1.S3Service();
+        this.catalogService = new catalogues_service_1.CatalogueService();
     }
 }
 exports.PagesService = PagesService;

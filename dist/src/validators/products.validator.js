@@ -1,6 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.ProductMediaDefaulValidator = exports.ProductUpdateValidator = exports.validateDuplicates = exports.ProductCreateValidator = void 0;
+exports.ProductMediaDefaulValidator = exports.ProductArrayIdValidator = exports.ProductUpdateValidator = exports.validateDuplicates = exports.ProductCreateValidator = void 0;
 const utils_1 = require("../utils/utils");
 const handler_validator_1 = require("../utils/handler.validator");
 const products_service_1 = require("./../services/products.service");
@@ -63,13 +63,13 @@ const ProductCreateValidator = [
         }
         prices.forEach((price, index) => {
             if (price.value === 0) {
-                throw new Error(`Price value not can be 0 at index ${index + 1}`);
+                throw new Error(`Price value not can be 0 at price ${index + 1}`);
             }
             const validationResult = (0, express_validator_1.body)(`prices[${index}]`)
                 .isObject()
                 .run(req);
             if (Array.isArray(validationResult)) {
-                throw new Error(`Invalid price object at index ${index}`);
+                throw new Error(`Invalid price object at price ${index}`);
             }
         });
         return true;
@@ -261,7 +261,7 @@ const ProductUpdateValidator = [
         }
         prices.forEach((price, index) => {
             if (price.value === 0) {
-                throw new Error(`Price value not can be 0 at index ${index + 1}`);
+                throw new Error(`Price value not can be 0 at price ${index + 1}`);
             }
             const validationResult = (0, express_validator_1.body)(`prices[${index}]`)
                 .isObject()
@@ -417,6 +417,31 @@ const ProductMediaDefaulValidator = [
     (req, res, next) => (0, handler_validator_1.handlerValidator)(req, res, next),
 ];
 exports.ProductMediaDefaulValidator = ProductMediaDefaulValidator;
+/**
+ * Validate array id products
+ */
+const ProductArrayIdValidator = [
+    (0, express_validator_1.check)('products')
+        .optional()
+        .isArray()
+        .withMessage('products must be a array value')
+        .custom(async (values) => {
+        // valdiate if is array products id
+        if (typeof values !== 'object') {
+            throw new Error('Product must be a product id array');
+        }
+        // validate if item in array is string
+        for (const productId of values) {
+            const issetProduct = await productService.getProductByIdOutUser(productId);
+            if (!issetProduct) {
+                throw new Error(`Product id ${productId} don´t exists on our record`);
+            }
+        }
+        return true;
+    }),
+    (req, res, next) => (0, handler_validator_1.handlerValidator)(req, res, next),
+];
+exports.ProductArrayIdValidator = ProductArrayIdValidator;
 // validate references duplicates
 function validateDuplicates(arr) {
     const seenReferences = new Set();

@@ -29,6 +29,11 @@ const CategoriesSchema = new mongoose_1.Schema({
         type: String,
         nullable: false,
     },
+    image: {
+        type: String,
+        nullable: true,
+        default: ''
+    },
     user_id: {
         type: mongoose_1.default.Schema.Types.ObjectId,
         ref: 'users',

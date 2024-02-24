@@ -4,6 +4,9 @@ exports.CategoriesCreationValidator = exports.CategoryIdValidator = void 0;
 const express_validator_1 = require("express-validator");
 const handler_validator_1 = require("../utils/handler.validator");
 const categories_service_1 = require("../services/categories.service");
+const utils_1 = require("../utils/utils");
+// instances
+const utils = new utils_1.Utils();
 // do validator
 const categoriesService = new categories_service_1.CategoriesService();
 // categories cration valdiator
@@ -13,9 +16,16 @@ const CategoriesCreationValidator = [
         .withMessage('Category name must be string')
         .notEmpty()
         .withMessage('Category name is required')
-        .isLength({ min: 3, max: 60 })
+        .isLength({ min: 3, max: 90 })
         .withMessage('Category name must have a minimum of 5 characters and a maximum of 60.'),
-    (req, res, next) => (0, handler_validator_1.handlerValidator)(req, res, next),
+    (req, res, next) => {
+        const errors = (0, express_validator_1.validationResult)(req);
+        if (!errors.isEmpty() && req.file) {
+            console.log(req.file);
+            utils.deleteItemFromStorage(`categories/${req.file.filename}`);
+        }
+        (0, handler_validator_1.handlerValidator)(req, res, next);
+    },
 ];
 exports.CategoriesCreationValidator = CategoriesCreationValidator;
 // id categories validator
@@ -34,7 +44,15 @@ const CategoryIdValidator = [
         if (!existCategory) {
             throw new Error('Category id dont´t exist in our records');
         }
+        return true;
     }),
-    (req, res, next) => (0, handler_validator_1.handlerValidator)(req, res, next),
+    (req, res, next) => {
+        const errors = (0, express_validator_1.validationResult)(req);
+        if (!errors.isEmpty() && req.file) {
+            console.log(req.file);
+            utils.deleteItemFromStorage(`categories/${req.file.filename}`);
+        }
+        (0, handler_validator_1.handlerValidator)(req, res, next);
+    },
 ];
 exports.CategoryIdValidator = CategoryIdValidator;

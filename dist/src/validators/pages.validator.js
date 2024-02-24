@@ -24,6 +24,7 @@ const PagesCreationValidator = [
         if (!availableTypes.includes(type)) {
             throw new Error('Type must be in (simple, double, triple)');
         }
+        return true;
     }),
     (0, express_validator_1.check)('catalogue_id')
         .isString()
@@ -37,6 +38,7 @@ const PagesCreationValidator = [
         if (!existCatalogue) {
             throw new Error('Catalogue id dont´t exist in our records');
         }
+        return true;
     }),
     (req, res, next) => (0, handler_validator_1.handlerValidator)(req, res, next),
 ]; // pages creation validation
@@ -54,6 +56,7 @@ const IdPageValidator = [
         if (!existCatalogue) {
             throw new Error('Page id dont´t exist in our records');
         }
+        return true;
     }),
     (req, res, next) => (0, handler_validator_1.handlerValidator)(req, res, next),
 ]; // id page validator
@@ -71,6 +74,7 @@ const pagesImportValdiator = [
         if (!existCatalogue) {
             throw new Error('Catalogue id dont´t exist in our records');
         }
+        return true;
     }),
     (req, res, next) => (0, handler_validator_1.handlerValidator)(req, res, next),
 ]; // pages import

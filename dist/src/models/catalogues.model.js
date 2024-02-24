@@ -24,10 +24,12 @@ var __importStar = (this && this.__importStar) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 const utils_1 = require("../utils/utils");
+const users_service_1 = require("../services/users.service");
+const s3_service_1 = require("../services/aws/s3/s3.service");
 const mongoose_1 = __importStar(require("mongoose"));
-const users_service_1 = require("./../services/users.service.");
 //intances
 const utils = new utils_1.Utils();
+const s3Service = new s3_service_1.S3Service();
 const userService = new users_service_1.UserService();
 const CatalogueSchema = new mongoose_1.Schema({
     name: {
@@ -68,7 +70,15 @@ CatalogueSchema.pre('findOneAndDelete', { document: true, query: true }, async f
     const catalog = await this.model.findOne(this.getQuery()).exec(); // Obtiene el catálogo antes de eliminarlo
     try {
         await userService.deleteCatalog(catalog.user_id, catalog._id); // delete catalog from user
-        await utils.deleteItemFromStorage(catalog.cover); // delete cover from catalog
+        // delete cover from s3
+        if (catalog.cover && catalog.cover.includes('.s3.us-east-2')) {
+            const key = catalog.cover.split('/').pop();
+            await s3Service.deleteSingleObject(key);
+            // delete from local storage
+        }
+        else {
+            await utils.deleteItemFromStorage(catalog.cover); // delete cover from catalog
+        }
         // delete pages
         for (const pageId of catalog.pages) {
             const page = await (0, mongoose_1.model)('pages').findById(pageId).exec();

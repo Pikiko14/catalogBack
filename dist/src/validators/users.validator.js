@@ -2,7 +2,7 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.UpdateUserData = exports.UserIdValidator = void 0;
 const express_validator_1 = require("express-validator");
-const users_service_1 = require("../services/users.service.");
+const users_service_1 = require("../services/users.service");
 const handler_validator_1 = require("../utils/handler.validator");
 // instanciate all class neccesaries
 const userService = new users_service_1.UserService();
@@ -23,6 +23,7 @@ const UserIdValidator = [
         if (!existUser) {
             throw new Error('User id dont´t exist in our records');
         }
+        return true;
     }),
     (req, res, next) => (0, handler_validator_1.handlerValidator)(req, res, next),
 ];
@@ -44,6 +45,7 @@ const UpdateUserData = [
         if (existUser && existUser.id !== id) {
             throw new Error('Username exist in our records');
         }
+        return true;
     }),
     (0, express_validator_1.check)('password')
         .if((value, { req }) => req.body.password.length > 0)

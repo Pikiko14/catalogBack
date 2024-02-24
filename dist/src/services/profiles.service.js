@@ -5,6 +5,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.ProfileService = void 0;
 const utils_1 = require("../utils/utils");
+const s3_service_1 = require("./aws/s3/s3.service");
 const profile_model_1 = __importDefault(require("../models/profile.model"));
 const subscriptions_service_1 = require("./subscriptions.service");
 const api_responser_1 = require("../utils/api.responser");
@@ -101,11 +102,20 @@ class ProfileService {
                 const profile = await this.model.findOne({ _id: profileId });
                 // validate if have profile pictury custom
                 if (profile.profile_pictury !== 'profile.webp') {
-                    this.utils.deleteItemFromStorage(`profile/${profile.profile_pictury}`);
+                    if (profile.profile_pictury && profile.profile_pictury.includes('.s3.us-east-2')) {
+                        const key = profile.profile_pictury.split('/').pop();
+                        await this.s3Service.deleteSingleObject(key);
+                    }
+                    else {
+                        this.utils.deleteItemFromStorage(`profile/${profile.profile_pictury}`);
+                    }
                 }
-                // set new profile img
-                profile.profile_pictury = file.filename;
-                await profile.save();
+                // set new profile pictury
+                if (file) {
+                    const fileS3 = await this.s3Service.uploadSingleObject(file);
+                    profile.profile_pictury = fileS3;
+                    await profile.save();
+                }
                 // return data
                 return (0, api_responser_1.successResponse)(res, profile, 'Profile pictury change success');
             }
@@ -113,7 +123,44 @@ class ProfileService {
                 throw error;
             }
         };
+        /**
+         * Get profile data by id
+         * @param {string} id
+         */
+        this.getProfileByUserId = async (id) => {
+            const profile = await this.model.findOne({
+                user_id: id
+            });
+            if (profile)
+                return profile;
+            return false;
+        };
+        /**
+         * set configuration profile
+         */
+        this.setConfigurationOnProfile = async (res, body, profileId) => {
+            try {
+                // update configuration data
+                const profile = await this.model.findOneAndUpdate({ _id: profileId }, {
+                    whatsapp_message: body.whatsapp_message || null,
+                    brand_color: body.brand_color || null,
+                    type_slider: body.type_slider || null,
+                }, {
+                    new: true,
+                });
+                // valdiate if profile exists
+                if (!profile) {
+                    return (0, api_responser_1.notFountResponse)(res, profileId, 'Don´t exists profile with this ID.');
+                }
+                // return data
+                return (0, api_responser_1.successResponse)(res, profile, 'Profile configuration set successfully');
+            }
+            catch (error) {
+                throw error;
+            }
+        };
         this.utils = new utils_1.Utils();
+        this.s3Service = new s3_service_1.S3Service();
         this.subscriptionService = new subscriptions_service_1.SubscriptionService();
     }
 }

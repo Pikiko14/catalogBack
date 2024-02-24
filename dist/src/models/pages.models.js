@@ -25,10 +25,11 @@ var __importStar = (this && this.__importStar) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 const utils_1 = require("../utils/utils");
 const mongoose_1 = __importStar(require("mongoose"));
+const s3_service_1 = require("../services/aws/s3/s3.service");
 const catalogues_service_1 = require("../services/catalogues.service");
 // instances
 const utils = new utils_1.Utils();
-const catalogueService = new catalogues_service_1.CatalogueService();
+const s3Service = new s3_service_1.S3Service();
 // declare schema
 const PagesSchema = new mongoose_1.Schema({
     number: {
@@ -53,7 +54,19 @@ const PagesSchema = new mongoose_1.Schema({
                 type: Number,
                 default: 1,
             },
-            buttons: [],
+            buttons: [{
+                    x: {
+                        type: String,
+                    },
+                    y: {
+                        type: String,
+                        default: ''
+                    },
+                    product: {
+                        type: mongoose_1.default.Schema.Types.ObjectId,
+                        ref: 'products'
+                    }
+                }],
         }]
 }, {
     timestamps: true,
@@ -64,10 +77,17 @@ PagesSchema.pre('findOneAndDelete', { document: true, query: true }, async funct
     const page = await this.model.findOne(this.getQuery()).exec(); // get page for delete in catalogs
     if (page) {
         try {
+            const catalogueService = new catalogues_service_1.CatalogueService();
             await catalogueService.deleteCatalog(page.catalogue_id, page._id);
             if (page.images && page.images.length > 0) {
                 for (const image of page.images) {
-                    await utils.deleteItemFromStorage(image.path);
+                    if (image.path && image.path.includes('.s3.us-east-2')) {
+                        const key = image.path.split('/').pop();
+                        await s3Service.deleteSingleObject(key);
+                    }
+                    else {
+                        await utils.deleteItemFromStorage(image.path);
+                    }
                 }
             }
             next();

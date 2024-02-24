@@ -123,6 +123,10 @@ class Utils {
                 await this.validateOrGeneratePath('products');
                 return 'products';
             }
+            if (path.includes('categories')) {
+                await this.validateOrGeneratePath('categories');
+                return 'categories';
+            }
             return undefined;
         };
         this.validateOrGeneratePath = async (path) => {

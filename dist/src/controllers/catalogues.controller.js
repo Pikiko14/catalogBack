@@ -29,10 +29,9 @@ class CatalogueController {
         this.createCatalogue = async (req, res) => {
             try {
                 const body = (0, express_validator_1.matchedData)(req); // get body clean
-                body.cover = `/${this.publicPath}/${req.file.filename}`;
-                const { _id, parent } = req.user; // get user loged id
+                const { _id, parent } = req.user; // get user logged id
                 body.user_id = parent ? parent : _id; // set  main user id
-                await this.service.createCatalogue(res, body);
+                await this.service.createCatalogue(res, body, req.file);
             }
             catch (error) {
                 return (0, api_responser_1.errorResponse)(res, error, 'Error creating catalogues.');
@@ -60,11 +59,7 @@ class CatalogueController {
         this.updateCatalogue = async (req, res) => {
             try {
                 const body = (0, express_validator_1.matchedData)(req); // get body clean
-                if (req.file) {
-                    body.cover = `/${this.publicPath}/${req.file.filename}`;
-                }
-                const { id } = req.params; // get id param in request
-                await this.service.updateCatalogue(res, body);
+                await this.service.updateCatalogue(res, body, req.file);
             }
             catch (error) {
                 return (0, api_responser_1.errorResponse)(res, error, 'Error on update catalogue');
@@ -96,6 +91,34 @@ class CatalogueController {
             }
             catch (error) {
                 return (0, api_responser_1.errorResponse)(res, error, 'Error on activation of catalogue');
+            }
+        };
+        /**
+         * List catalog by id
+         * @param {Request} req
+         * @param {Response} res
+         */
+        this.doListCatalog = async (req, res) => {
+            try {
+                const { id } = req.params;
+                await this.service.doListCatalog(res, id);
+            }
+            catch (error) {
+                return (0, api_responser_1.errorResponse)(res, error, 'Error on listing catalogue');
+            }
+        };
+        /**
+         * download excel and send by email
+         * @param {Request} req
+         * @param {Response} res
+         */
+        this.downloadPdfAndSendEmail = async (req, res) => {
+            try {
+                const body = (0, express_validator_1.matchedData)(req);
+                await this.service.downloadPdfAndSendEmail(res, body);
+            }
+            catch (error) {
+                return (0, api_responser_1.errorResponse)(res, error.message, 'Error on download catalogue');
             }
         };
         this.service = new catalogues_service_1.CatalogueService();

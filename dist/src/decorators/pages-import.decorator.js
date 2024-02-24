@@ -32,7 +32,7 @@ const pdf_parse_1 = __importDefault(require("pdf-parse"));
 const api_responser_1 = require("../utils/api.responser");
 const utils_1 = require("../utils/utils");
 const catalogues_service_1 = require("../services/catalogues.service");
-const users_service_1 = require("../services/users.service.");
+const users_service_1 = require("../services/users.service");
 const subscription_usability_service_1 = require("../services/subscription-usability.service");
 const subscriptions_service_1 = require("../services/subscriptions.service");
 // instances

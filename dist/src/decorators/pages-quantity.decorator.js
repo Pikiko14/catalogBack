@@ -1,7 +1,7 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.PagesCountDecorator = void 0;
-const users_service_1 = require("../services/users.service.");
+const users_service_1 = require("../services/users.service");
 const api_responser_1 = require("../utils/api.responser");
 const catalogues_service_1 = require("../services/catalogues.service");
 const subscriptions_service_1 = require("../services/subscriptions.service");

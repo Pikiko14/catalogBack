@@ -107,6 +107,51 @@ class ProductsController {
                 return (0, api_responser_1.errorResponse)(res, error.message, 'Error set default image on product.');
             }
         };
+        /**
+        * show products
+        * @param req
+        * @param res
+        * @returns
+        */
+        this.showProductByFront = async (req, res) => {
+            try {
+                const { productId } = req.params;
+                await this.service.showProductByFront(res, productId);
+            }
+            catch (error) {
+                return (0, api_responser_1.errorResponse)(res, error.message, 'Error show products');
+            }
+        };
+        /**
+         * add product to cart
+         * @param req
+         * @param res
+         * @returns
+         */
+        this.addProductToCart = async (req, res) => {
+            try {
+                const body = (0, express_validator_1.matchedData)(req);
+                await this.service.addProductToCart(res, body);
+            }
+            catch (error) {
+                return (0, api_responser_1.errorResponse)(res, error.message, 'Error adding to cart');
+            }
+        };
+        /**
+         * add product to cart
+         * @param req
+         * @param res
+         * @returns
+         */
+        this.filterProducts = async (req, res) => {
+            try {
+                const { catalogue_id, product, categories } = req.query;
+                await this.service.filterProducts(res, product, catalogue_id, categories);
+            }
+            catch (error) {
+                return (0, api_responser_1.errorResponse)(res, error.message, 'Error product search');
+            }
+        };
         this.service = new products_service_1.ProductsService();
     }
 }
