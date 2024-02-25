@@ -25,7 +25,7 @@ Para instalar el proyecto en tu entorno local
   npm run dev
 ```
 
-Para instalar el proyecto en tu entorno producción
+Para instalar el proyecto en tu entorno producción, importante validar las url de produccion en el archivo .env
 
 ```bash
   sudo Git clone https://github.com/Pikiko14/catalogBack
