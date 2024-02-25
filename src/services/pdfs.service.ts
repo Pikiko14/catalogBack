@@ -62,7 +62,7 @@ export class PdfService extends EmailService {
                 browser = await puppeteer.launch();
              } else {
                 browser = await puppeteer.launch({
-                    executablePath: '/opt/google/chrome',
+                    executablePath: '/usr/bin/chromium',
                 });
              }
              const page = await browser.newPage();
