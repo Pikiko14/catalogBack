@@ -70,7 +70,7 @@ export class PdfToImage extends EmailService {
             }
             // delete pdf from temp storage
             await this.utils.deleteItemFromStorage(`pdfs/${file.filename}`);
-            this.optionsPdfToImg.savePath = `${__dirname}../../../uploads/`;
+            this.optionsPdfToImg.savePath = `${process.cwd()}/uploads/`;
         } catch (error: any) {
             throw error.message;  
         }
