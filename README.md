@@ -40,5 +40,6 @@ Para instalar el proyecto en tu entorno producción, importante validar las url 
   sudo mkdir products
   sudo mkdir profile
   npm run build
+  install imagemagick like this url https://www.linuxcapable.com/how-to-install-imagemagick-on-debian-linux/
 ```
 
