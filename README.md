@@ -41,5 +41,13 @@ Para instalar el proyecto en tu entorno producción, importante validar las url 
   sudo mkdir profile
   npm run build
   install imagemagick like this url https://www.linuxcapable.com/how-to-install-imagemagick-on-debian-linux/
+  sudo chown -R admin:admin /home/catalogBack/uploads
+  sudo chown -R admin:admin /home/catalogBack/uploads/images
+  sudo chown -R admin:admin /home/catalogBack/dist/uploads
+  sudo chown -R admin:admin /home/catalogBack/dist/uploads/images
+  sudo chmod -R u+w /home/catalogBack/uploads
+  sudo chmod -R u+w /home/catalogBack/dist/uploads
+  sudo chmod -R u+w /home/catalogBack/uploads/images
+  sudo chmod -R u+w /home/catalogBack/dist/uploads/images
 ```
 
