@@ -17,7 +17,7 @@ export class PdfToImage extends EmailService {
         this.type = 'simple';
         this.optionsPdfToImg = {
             density: 100,
-            savePath: `${__dirname}../../../uploads/`,
+            savePath: `${process.cwd()}/uploads/`,
             format: 'png',
             width: 500,
             height: 720
