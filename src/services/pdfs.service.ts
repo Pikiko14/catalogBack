@@ -57,7 +57,14 @@ export class PdfService extends EmailService {
     buildPdf = async (name: string) => {
         try {
              // Crear una instancia de Puppeteer
-             const browser = await puppeteer.launch();
+             let browser = null;
+             if (process.env.APP_ENV === 'develop') {
+                browser = await puppeteer.launch();
+             } else {
+                browser = await puppeteer.launch({
+                    executablePath: '/opt/google/chrome',
+                });
+             }
              const page = await browser.newPage();
              // Establecer el contenido HTML en la página
              await page.setContent(this.filledHTMLContent);
