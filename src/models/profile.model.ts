@@ -5,7 +5,7 @@ const ProfileSchema = new Schema<ProfileInterface>(
     {
         profile_pictury: {
             type: String,
-            default: 'profile.webp'
+            default: 'https://crew-web-catalgs.s3.us-east-2.amazonaws.com/profile.webp'
         },
         brand_name: {
             type: String,
