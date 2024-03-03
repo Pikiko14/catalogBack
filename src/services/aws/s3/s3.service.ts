@@ -70,7 +70,7 @@ export class S3Service {
     try {
       // upload single file to aws
       const fileName = `${new Date().getTime()}${file.originalname}`;
-      const webpBuffer = await sharp(file.buffer).toFormat('webp').toBuffer();
+      const webpBuffer = await sharp(file.buffer).toFormat('webp', { quality: 85 }).toBuffer();
       const params = {
         Bucket: process.env.AWS_S3_BUCKET,
         Key: fileName,
@@ -98,7 +98,7 @@ export class S3Service {
       const promises = files.map(async (file: any) => {
         // Configura los parámetros para cada archivo
         const fileName = `${new Date().getTime()}${file.originalname}`;
-        const webpBuffer = await sharp(file.buffer).toFormat('webp').toBuffer();
+        const webpBuffer = await sharp(file.buffer).toFormat('webp', { quality: 85 }).toBuffer();
         const params = {
           Bucket: process.env.AWS_S3_BUCKET,
           Key: fileName,
