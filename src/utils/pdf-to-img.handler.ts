@@ -44,7 +44,8 @@ export class PdfToImage extends EmailService {
                     const data = results[index];
                     const pageNumber = index + 1;
                     // Leer la imagen convertida
-                    const buffer = await fs.promises.readFile(`${this.optionsPdfToImg.savePath}/${data.name}`);
+                    const buffer: any = await fs.promises.readFile(`${this.optionsPdfToImg.savePath}/${data.name}`);
+                    buffer.originalname = `img_catalog_${catalogId}_${new Date().getTime().toString()}.webp`;
                     // Subir la imagen a S3
                     const s3Service = new S3Service();
                     const fileS3 = await s3Service.uploadSingleObject(buffer);

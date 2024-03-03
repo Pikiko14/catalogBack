@@ -46,6 +46,7 @@
     "pdf2pic": "^3.0.3",
     "pdftopic": "^0.2.0",
     "puppeteer": "^22.1.0",
+    "sharp": "^0.33.2",
     "winston": "^3.11.0"
   },
   "devDependencies": {
@@ -58,6 +59,7 @@
     "@types/multer": "^1.4.8",
     "@types/nodemailer": "^6.4.14",
     "@types/nodemon": "^1.19.2",
+    "@types/sharp": "^0.32.0",
     "pdf-to-png-converter": "^3.1.0",
     "ts-node": "^10.9.2",
     "typescript": "^5.3.3"

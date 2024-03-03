@@ -5,6 +5,7 @@ import {
   PutObjectCommand,
   DeleteObjectCommand,
 } from "@aws-sdk/client-s3";
+import sharp from 'sharp';
 
 export class S3Service {
   client: S3Client;
@@ -69,10 +70,11 @@ export class S3Service {
     try {
       // upload single file to aws
       const fileName = `${new Date().getTime()}${file.originalname}`;
+      const webpBuffer = await sharp(file.buffer).toFormat('webp').toBuffer();
       const params = {
         Bucket: process.env.AWS_S3_BUCKET,
         Key: fileName,
-        Body: file.buffer,
+        Body: webpBuffer,
       };
       const response = await this.uploadFile(params);
       // Generar una URL firmada para el objeto recién cargado sin límite de tiempo de expiración
@@ -93,13 +95,14 @@ export class S3Service {
   uploadMultipleFiles = async (files: any) => {
     try {
       const filesArrys: string[] = [];
-      const promises = files.map((file: any) => {
+      const promises = files.map(async (file: any) => {
         // Configura los parámetros para cada archivo
         const fileName = `${new Date().getTime()}${file.originalname}`;
+        const webpBuffer = await sharp(file.buffer).toFormat('webp').toBuffer();
         const params = {
           Bucket: process.env.AWS_S3_BUCKET,
           Key: fileName,
-          Body: file.buffer,
+          Body: webpBuffer,
         };
         filesArrys.push(`${process.env.AWS_S3_URL}/${fileName}`);
         return this.uploadFile(params);
