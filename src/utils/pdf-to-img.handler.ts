@@ -32,47 +32,56 @@ export class PdfToImage extends EmailService {
      */
     processPdfToImg = async (file: any, catalogId: string) => {
         try {
-            const path = await this.utils.getPath('images'); // get user path
+            const path = await this.utils.getPath('images'); // obtener el directorio de imágenes
+            // Configurar el directorio de almacenamiento para las imágenes
             this.optionsPdfToImg.savePath = `${this.optionsPdfToImg.savePath}/${path}/`; // edit path to save
-            this.optionsPdfToImg.saveFilename = `img_catalog_${catalogId}_${new Date().getTime().toString()}`;
-            const convert = fromPath(file.path, this.optionsPdfToImg); // conver images...
-            const results = await convert.bulk(-1, { responseType: "image" }); // get images array
-            // generamos la pagina del catalogo en base a cada imagen convertida
+            this.optionsPdfToImg.saveFilename = `img_catalog_${catalogId}_${new Date().getTime().toString()}`; // set name pf image 
+            const convert = fromPath(file.path, this.optionsPdfToImg); // convertir a imágenes
+            const results = await convert.bulk(-1, { responseType: "image" }); // obtener imágenes
+            // Verificar si se obtuvieron resultados
             if (results.length > 0) {
-                let index = 0;
-                for (const data of results) {
+                for (let index = 0; index < results.length; index++) {
+                    const data = results[index];
+                    const pageNumber = index + 1;
+                    // Leer la imagen convertida
+                    const buffer = await fs.promises.readFile(`${this.optionsPdfToImg.savePath}/${data.name}`);
+                    // Subir la imagen a S3
+                    const s3Service = new S3Service();
+                    const fileS3 = await s3Service.uploadSingleObject(buffer);
+                    // Construir objeto de imagen
+                    const image = {
+                        path: fileS3,
+                        order: pageNumber,
+                        buttons: []
+                    };
+                    // Guardar la página en la base de datos
                     const pageDate: PagesInterface = {
-                        number: (index + 1) as number,
+                        number: pageNumber,
                         type: this.type,
                         catalogue_id: catalogId as any,
-                        images: []
-                    }
-                    let image: any = {};
-                    await setTimeout(async () => {
-                        const buffer: any = await fs.readFileSync(`${process.cwd()}/uploads/${path}/${data.name}`);
-                        buffer.originalname = `img_catalog_${catalogId}_${new Date().getTime().toString()}.webp`;
-                        const s3Service = new S3Service();
-                        const fileS3 = await s3Service.uploadSingleObject(buffer);
-                        image = {
-                            path: fileS3,
-                            order: index + 1,
-                            buttons: []
-                        }
-                        pageDate.images.push(image);
-                        const pageService = new PagesService();
-                        const page = await pageService.savePageFromPdfToImg(pageDate);
-                        const catalogService = new CatalogueService();
-                        await catalogService.pushPage(true as any, catalogId as any, page._id);
-                        await this.utils.deleteItemFromStorage(`/${path}/${data.name}`);
-                        index++;
-                    }, 500);
+                        images: [image]
+                    };
+                    const pageService = new PagesService();
+                    const page = await pageService.savePageFromPdfToImg(pageDate);
+                    // Asociar la página al catálogo
+                    const catalogService = new CatalogueService();
+                    await catalogService.pushPage(true as any, catalogId as any, page._id);
+                    // Eliminar la imagen convertida del almacenamiento temporal
+                    await this.utils.deleteItemFromStorage(`/${path}/${data.name}`);
+                    // time out
+                    setTimeout(() => {
+                        console.log(`Se ha subido la imagen: ${data.name}`)
+                    }, 2000)
                 }
             }
-            // delete pdf from temp storage
+    
+            // Eliminar el PDF del almacenamiento temporal
             await this.utils.deleteItemFromStorage(`pdfs/${file.filename}`);
+    
+            // Restaurar el directorio de almacenamiento predeterminado
             this.optionsPdfToImg.savePath = `${process.cwd()}/uploads/`;
         } catch (error: any) {
-            throw error.message;  
+            throw error.message;
         }
     }
 }
