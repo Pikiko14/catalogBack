@@ -120,7 +120,7 @@ export class ProfileService {
             // get profile
             const profile = await this.model.findOne({ _id: profileId });
             // validate if have profile pictury custom
-            if (profile.profile_pictury !== 'profile.webp') {
+            if (!profile.profile_pictury.includes('profile.webp')) {
                 if (profile.profile_pictury && profile.profile_pictury.includes('.s3.us-east-2')) {
                     const key: string = profile.profile_pictury.split('/').pop();
                     await this.s3Service.deleteSingleObject(key);
