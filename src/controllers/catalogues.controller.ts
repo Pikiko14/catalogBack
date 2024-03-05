@@ -123,7 +123,7 @@ export class CatalogueController {
     }
 
     /**
-     * download excel and send by email
+     * download pdf and send by email
      * @param {Request} req
      * @param {Response} res
      */
@@ -135,4 +135,18 @@ export class CatalogueController {
             return errorResponse(res, error.message, 'Error on download catalogue');
         }
     }
+
+    /**
+    * download pdf
+    * @param {Request} req
+    * @param {Response} res
+    */
+    downloadPdfAndDeleteFile = async (req: Request, res: Response) => {
+       try {
+           const { file } = req.params;
+           await this.service.downloadPdfAndDeleteFile(res, file);
+       } catch (error: any) {
+           return errorResponse(res, error.message, 'Error on download catalogue');
+       }
+   }
 }

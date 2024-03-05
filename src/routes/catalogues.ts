@@ -99,5 +99,9 @@ router.post('/download/pdf',
     controller.downloadPdfAndSendEmail,
 );
 
+router.get('/pdfs/:file',
+    controller.downloadPdfAndDeleteFile,
+);
+
 // export router
 export { router };

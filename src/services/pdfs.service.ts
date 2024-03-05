@@ -6,6 +6,7 @@ import { PdfActions, EmailData } from '../interfaces/generals.interface';
 
 export class PdfService extends EmailService {
     public data: any = {};
+    public path: string = `${process.cwd()}/src/templates`;
     public htmlContent: any = null;
     public filledHTMLContent: any = null;
 
@@ -38,11 +39,17 @@ export class PdfService extends EmailService {
         const data: EmailData  = actions.data;
         switch (actions.type) {
             case 'send-email':
-                await this.sendEmailWithAttachments(
+                let htmlEmail = fs.readFileSync(`${this.path}/emails/download-pdf.html`, 'utf8');
+                htmlEmail = htmlEmail.replace('{{brand_img}}', data.profile?.profile_pictury as string);
+                htmlEmail = htmlEmail.replace(
+                    '{{url_pdf}}',
+                    `${process.env.API_URL}/api/v1/catalogues/${data?.attachments ? data?.attachments[0] : ''}`
+                );
+                await this.sendEmail(
                     data.email,
                     data.subject,
-                    data.text as string,
-                    data.attachments as any
+                    undefined,
+                    htmlEmail,
                 );
                 break;
             default:

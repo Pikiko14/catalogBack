@@ -43,6 +43,7 @@ export class QueueService {
                                 {
                                     type: 'send-email',
                                     data: {
+                                        profile: data.profile,
                                         email: data.email,
                                         attachments: [
                                             `pdfs/${data.catalogue_id}.pdf`
@@ -64,8 +65,9 @@ export class QueueService {
                         break;
                 }
                 done();
-            } catch (error) {
+            } catch (error: any) {
                 console.error('Error al ejecutar el job:', error);
+                done(error);
             }
         });
     }

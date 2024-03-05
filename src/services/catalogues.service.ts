@@ -16,6 +16,7 @@ export class CatalogueService extends QueueService {
     userService: UserService;
     model: any = CatalogueModel;
     profileService: ProfileService;
+    public pdfPth = `${process.cwd()}/uploads/pdfs`;
 
     constructor() {
         super();
@@ -294,17 +295,39 @@ export class CatalogueService extends QueueService {
             // filter catalogue
             const catalogue = await this.model.findOne({ _id: body.id })
             .populate('pages');
+            const profile = await this.profileService.getProfileByUserId(catalogue.user_id as any);
             await this.myFirstQueue.add({
                 type: 'pdf',
                 email: body.email,
                 catalogue_id: body.id,
                 pages: catalogue.pages,
                 typeEmail: 'catalogue-download',
+                profile,
             });
             // reutrn response
             return createdResponse(res, { catalogue }, "Download proccess catalogue started.");
         } catch (error) {
             throw error;
+        }
+    }
+
+    /**
+    * download pdf
+    * @param { Response } res
+    * @param { string } file
+    */
+    downloadPdfAndDeleteFile = async (res: Response, file: string) => {
+        try {
+            res.download(`${this.pdfPth}/${file}`, async (error) => {
+                if (error) {
+                    // Manejar errores de descarga
+                    return errorResponse(res, error.message, 'Error on download catalogue');
+                } else {
+                    await this.utils.deleteItemFromStorage(`pdfs/${file}`);
+                }
+            });
+        } catch (error: any) {
+            return errorResponse(res, error.message, 'Error on download catalogue');
         }
     }
 }
