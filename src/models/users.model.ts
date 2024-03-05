@@ -34,7 +34,11 @@ const UserSchema = new Schema<User>(
         catalogues: [{
             type: mongoose.Schema.Types.ObjectId,
             ref: 'catalogues'
-        }]
+        }],
+        recovery_token: {
+            type: String,
+            default: null,
+        },
     },
     {
         timestamps: true,

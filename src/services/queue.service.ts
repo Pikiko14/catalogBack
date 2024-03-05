@@ -1,10 +1,12 @@
 import Queue from "bull";
+import * as fs from 'fs';
 import { PdfService } from "./pdfs.service";
 import { PdfToImage } from './../utils/pdf-to-img.handler';
 
 export class QueueService {
     myFirstQueue;
     pdfToImage: PdfToImage;
+    public path: string = `${process.cwd()}/src/templates`;
 
     constructor() {
         this.myFirstQueue = new Queue('catalogue-queue');
@@ -59,6 +61,13 @@ export class QueueService {
                     case 'page':
                         if (data.action === 'process-pdf-to-image') {
                             await this.pdfToImage.processPdfToImg(data.file, data.catalogue_id);
+                        }
+                        break;
+                    // job for auth
+                    case 'auth':
+                        if (data.action === 'send-email-recovery') {
+                            let htmlEmail = fs.readFileSync(`${this.path}/emails/download-pdf.html`, 'utf8');
+                            console.log('correo enviado correctamente');
                         }
                         break;
                     default:

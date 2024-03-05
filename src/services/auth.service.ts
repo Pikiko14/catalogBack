@@ -1,10 +1,10 @@
 import { Response } from "express";
 import { Utils } from "../utils/utils";
-import { UserService } from "./users.service"
+import { UserService } from "./users.service";
+import { QueueService } from "./queue.service";
 import { User } from "../interfaces/users.interface";
+import { errorResponse, notFountResponse, successResponse } from "../utils/api.responser";
 import { LoginInterface, LoginReturn } from "../interfaces/auth.interface";
-import { errorResponse, unProcesableEntityResponse, successResponse } from "../utils/api.responser";
-import { Model } from "mongoose";
 
 export class AuthService {
     userService: UserService;
@@ -92,6 +92,38 @@ export class AuthService {
             await this.userService.createUser(res, user, '');
         } catch (error) {
             return errorResponse(res, error, 'Error registering user.');
+        }
+    }
+
+    /**
+     * do login user
+     * @param {LoginInterface} loginData
+     */
+    recoveryPassword = async (res: Response, body: any): Promise<Response | any> => {
+        try {
+            const { email } = body; // get email from body
+            const queueService = new QueueService(); //instanciate queueService
+            // get user data
+            const user: any  = await this.userService.validateUserByEmail(email);
+            if (!user) {
+                return notFountResponse(res, email, `Don´t exists user with this email ${email}`);
+            }
+            // prepare token for recovery
+            const token = await this.utils.generateTokenForRecoveryPassword({ email });
+            // set token in user
+            user.recovery_token = token;
+            user.save();
+            // send email to user
+            queueService.myFirstQueue.add({
+                type: 'auth',
+                token,
+                action: 'send-email-recovery',
+                email,
+            });
+            // return data
+            return successResponse(res, {body}, 'Recovery email process initiated correctly');
+        } catch (error: any) {
+            throw error.message;  
         }
     }
 }

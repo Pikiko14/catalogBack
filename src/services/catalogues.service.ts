@@ -10,7 +10,7 @@ import { Catalogue } from "../interfaces/catalogues.interface";
 import { ResponseInterface } from "../interfaces/response.interface";
 import { successResponse, errorResponse, createdResponse } from "../utils/api.responser";
 
-export class CatalogueService extends QueueService {
+export class CatalogueService {
     utils: Utils;
     s3Service: S3Service;
     userService: UserService;
@@ -19,7 +19,6 @@ export class CatalogueService extends QueueService {
     public pdfPth = `${process.cwd()}/uploads/pdfs`;
 
     constructor() {
-        super();
         this.utils = new Utils();
         this.s3Service = new S3Service();
         this.userService = new UserService();
@@ -296,7 +295,8 @@ export class CatalogueService extends QueueService {
             const catalogue = await this.model.findOne({ _id: body.id })
             .populate('pages');
             const profile = await this.profileService.getProfileByUserId(catalogue.user_id as any);
-            await this.myFirstQueue.add({
+            const queueService = new QueueService(); //instanciate queueService
+            await queueService.myFirstQueue.add({
                 type: 'pdf',
                 email: body.email,
                 catalogue_id: body.id,

@@ -10,5 +10,6 @@ export interface User extends LoginInterface {
     role?: string;
     scopes?: string[];
     parent?: string;
-    catalogues?: mongoose.Schema.Types.ObjectId[],
+    catalogues?: mongoose.Schema.Types.ObjectId[];
+    recovery_token?: string;
 }

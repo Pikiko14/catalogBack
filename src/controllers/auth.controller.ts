@@ -38,4 +38,18 @@ export class AuthController {
             return errorResponse(res, error, 'Error on login');
         }
     }
+
+    /**
+     * Do register user
+     * @param {Request} req
+     * @param {Response} res
+     */
+    recoveryPassword = async (req: Request, res: Response) => {
+        try {
+            const body = matchedData(req); // get bodyd data formated correctly.
+            await this.service.recoveryPassword(res, body); // do register user
+        } catch (error) {
+            return errorResponse(res, error, 'Error on login');
+        }
+    }
 }

@@ -188,6 +188,18 @@ class Utils {
         const signature: string = await crypto.createHash('sha256').update(chainText).digest('hex');
         return signature;
     }
+
+    /**
+     * generate token for recovery password.
+     * @param {string} id
+     * @param {string} name
+     */
+    generateTokenForRecoveryPassword = async ({ email }: any) => {
+        const jwt = await sign({ email }, this.JWT_SECRET, {
+          expiresIn: "30m",
+        });
+        return jwt;
+    }
 }
 
 export { Utils };

@@ -34,7 +34,7 @@ router.post(
 router.post(
     '/recovery/password',
     EmailValidator,
-    controller.registerUser
+    controller.recoveryPassword,
 );
 
 // export router
