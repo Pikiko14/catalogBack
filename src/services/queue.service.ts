@@ -1,18 +1,21 @@
 import Queue from "bull";
 import * as fs from 'fs';
 import { PdfService } from "./pdfs.service";
+import { EmailService } from './aws/ses/email.service';
 import { PdfToImage } from './../utils/pdf-to-img.handler';
 
 export class QueueService {
     myFirstQueue;
     pdfToImage: PdfToImage;
     public path: string = `${process.cwd()}/src/templates`;
+    public emailService: EmailService;
 
     constructor() {
         this.myFirstQueue = new Queue('catalogue-queue');
         this.setupQueueListeners();
         this.processQueue();
         this.pdfToImage = new PdfToImage();
+        this.emailService = new EmailService();
     }
 
     setupQueueListeners = () => {
@@ -66,8 +69,15 @@ export class QueueService {
                     // job for auth
                     case 'auth':
                         if (data.action === 'send-email-recovery') {
-                            let htmlEmail = fs.readFileSync(`${this.path}/emails/download-pdf.html`, 'utf8');
-                            console.log('correo enviado correctamente');
+                            let htmlEmail = fs.readFileSync(`${this.path}/emails/recovery-password.html`, 'utf8');
+                            const urlRecovery = `${process.env.APP_URL}/login?recovery=true&token=${data.token}`
+                            htmlEmail = htmlEmail.replace('{{recoveryUrl}}', urlRecovery as string);
+                            await this.emailService.sendEmail(
+                                data.email,
+                                'Recovery password',
+                                undefined,
+                                htmlEmail,
+                            );
                         }
                         break;
                     default:
