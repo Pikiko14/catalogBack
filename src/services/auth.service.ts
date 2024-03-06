@@ -88,6 +88,14 @@ export class AuthService {
             // add other some user data
             user.role = user.role ? user.role : this.role;
             user.scopes = this.scopes;
+            // send email welcome
+            const queueService = new QueueService(); //instanciate queueService
+            queueService.myFirstQueue.add({
+                type: 'auth',
+                action: 'send-email-welcome',
+                user,
+                email: user.email
+            });
             // do register user
             await this.userService.createUser(res, user, '');
         } catch (error) {

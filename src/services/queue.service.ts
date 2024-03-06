@@ -68,6 +68,7 @@ export class QueueService {
                         break;
                     // job for auth
                     case 'auth':
+                        // recovery email
                         if (data.action === 'send-email-recovery') {
                             let htmlEmail = fs.readFileSync(`${this.path}/emails/recovery-password.html`, 'utf8');
                             const urlRecovery = `${process.env.APP_URL}/login?recovery=true&token=${data.token}`
@@ -75,6 +76,19 @@ export class QueueService {
                             await this.emailService.sendEmail(
                                 data.email,
                                 'Recovery password',
+                                undefined,
+                                htmlEmail,
+                            );
+                        }
+                        // welcome email
+                        if (data.action === 'send-email-welcome') {
+                            let htmlEmail = fs.readFileSync(`${this.path}/emails/welcome.html`, 'utf8');
+                            htmlEmail = htmlEmail.replace('{{name}}', data.user.name as string);
+                            const urlLogin = `${process.env.APP_URL}/login`;
+                            htmlEmail = htmlEmail.replace('{{loginUrl}}', urlLogin as string);
+                            await this.emailService.sendEmail(
+                                data.email,
+                                `Welcome ${data.user.name}`,
                                 undefined,
                                 htmlEmail,
                             );
