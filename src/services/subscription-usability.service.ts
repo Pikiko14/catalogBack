@@ -111,4 +111,38 @@ export class SubscriptionUsabilityService {
     deleteUsabilities = async (subscriptionId: string) => {
         const usabilites = await this.modelUsability.deleteMany({ subscription_id: subscriptionId });
     }
+
+    /**
+     * generate usabilities for subscription
+     * @param { string } id
+     * @param { Response } res
+     * @param { string } planId
+     */
+    generateUsabilitiesForFreePlan = async (id: string | undefined | any, planId: string | ObjectId | any) => {
+        try {
+            const plan: PlanInterface = await this.planService.getPlan('_id', planId) as PlanInterface;
+            const { characteristics } = plan;
+            let subscriptionUsabilities: any[] = []
+            for (const characteristic of characteristics) {
+                let quantity = 0;
+                if (!characteristic.path.includes('pages') && subscriptionUsabilities.length > 0) {
+                    const usabilityPreview = subscriptionUsabilities.find((item: any) => item.path === characteristic.path);
+                    quantity = usabilityPreview ? usabilityPreview.used : 0;
+                };
+                const data: SubscriptionUsabilityInterface = {
+                    method: characteristic.methods,
+                    path: characteristic.path,
+                    total: characteristic.quantity,
+                    used: characteristic.type_characteristics === 'boolean' && characteristic.quantity > 0 ?
+                        1 :
+                        quantity,
+                    subscription_id: id,
+                    type_characteristics: characteristic.type_characteristics
+                }
+                await this.modelUsability.create(data);
+            }
+        } catch (error) {
+            throw error;
+        }
+    }
 }

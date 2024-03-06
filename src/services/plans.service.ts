@@ -5,8 +5,9 @@ import { errorResponse, notFountResponse, successResponse } from "../utils/api.r
 import { PlanInterface } from "../interfaces/plan.interface";
 
 export class PlanService {
-    model: any = PlanModel;
     utils: Utils;
+    model: any = PlanModel;
+    freePlanName: string = 'free_plan';
 
     constructor(
     ) {
@@ -135,4 +136,19 @@ export class PlanService {
             throw error;
         }
     };
+
+    /**
+     * get free plan
+     */
+    getFreePlan = async () => {
+        try {
+            const freePlan = await this.model.findOne({ name: this.freePlanName });
+            if (freePlan) {
+                return freePlan;
+            }
+            return null;
+        } catch (error) {
+            throw error;
+        }
+    }
 }

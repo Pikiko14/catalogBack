@@ -1,11 +1,12 @@
 import { Response } from "express";
 import { Utils } from "../utils/utils";
+import { PlanService } from "./plans.service";
 import { User } from "../interfaces/users.interface";
 import { HandlerRequest } from "../utils/handler.request";
 import SubscriptionsModel from "../models/subscriptions.model";
+import { SubscriptionUsabilityService } from "./subscription-usability.service";
 import { errorResponse, notFountResponse, successResponse } from "../utils/api.responser";
 import { EpaycoConfirmationBodyInterface, SubscriptionsInterface } from './../interfaces/subscriptions.interface';
-import { SubscriptionUsabilityService } from "./subscription-usability.service";
 
 export class SubscriptionService extends SubscriptionUsabilityService {
     model: any = SubscriptionsModel;
@@ -16,12 +17,14 @@ export class SubscriptionService extends SubscriptionUsabilityService {
     params: any;
     epaycoPrivateKey: string | undefined;
     epaycoCustomIdClient: string | undefined;
+    planService: PlanService;
 
     constructor(
     ) {
         super();
         this.params = {};
         this.utils = new Utils();
+        this.planService = new PlanService();
         this.externalUrl = 'https://secure.epayco.co';
         this.billingPeriodTime = { Monthly: 30, Yearly: 365 };
         this.epaycoPrivateKey = process.env.EPAYCO_PRIVATE_KEY;
@@ -218,6 +221,30 @@ export class SubscriptionService extends SubscriptionUsabilityService {
             return errorResponse(res, { signature, x_signature }, 'Validation signatures do not match');
         } catch (error) {
             return errorResponse(res, error, 'Transaction confirmation failed.');
+        }
+    }
+
+    /**
+     * create free subscription
+     * @param { User } user
+     */
+    createFreeSubscription = async (user: User) => {
+        try {
+            const freePlan = await this.planService.getFreePlan();
+            const body: SubscriptionsInterface = {
+                plan_id: freePlan._id,
+                user_id: user._id as string,
+                date_start: this.utils.getDate(),
+                date_end: this.utils.sumTimeToDate(this.utils.getDate()as Date, 'day', 15),
+                expired_at: null,
+                billing_period: 'Monthly'
+            };
+            const suscription: SubscriptionsInterface = await this.model.create(body);
+            // set usabilities
+            const oldSubscription: SubscriptionsInterface | null = await this.getLastSubscription(user._id as string);
+            await this.generateUsabilitiesForFreePlan(suscription.id, suscription.plan_id);
+        } catch (error) {
+            throw error;
         }
     }
 }

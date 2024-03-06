@@ -4,15 +4,17 @@ import UserModel from "../models/users.model";
 import mongoose, { ObjectId } from "mongoose";
 import { ProfileService } from "./profiles.service";
 import { User } from "../interfaces/users.interface";
+import { TypeSlider } from "../interfaces/profile.interface";
+import { SubscriptionService } from "./subscriptions.service";
 import { ResponseInterface } from "../interfaces/response.interface";
 import { successResponse, errorResponse, createdResponse, notFountResponse } from "../utils/api.responser";
-import { TypeSlider } from "../interfaces/profile.interface";
 
 export class UserService {
     user = {}
     model: any = UserModel;
     utils: Utils;
     profileService: ProfileService;
+    subscriptionService: SubscriptionService;
 
     constructor() {
         this.user = {
@@ -27,6 +29,7 @@ export class UserService {
         } as User;
         this.utils = new Utils();
         this.profileService = new ProfileService();
+        this.subscriptionService = new SubscriptionService();
     }
 
     /**
@@ -43,6 +46,7 @@ export class UserService {
             const userBd: User = await this.model.create(user);
             // generate profile
             if (user?.role === 'admin') {
+                // generate profile
                 await this.profileService.createProfile({
                     brand_name: '',
                     phone_number: '',
@@ -53,6 +57,8 @@ export class UserService {
                     type_slider: TypeSlider.Simple,
                     user_id: userBd._id as any
                 })
+                // get free plam
+                await this.subscriptionService.createFreeSubscription(userBd);
             }
             // reutrn response
             return createdResponse(res, userBd, "User registered correctly");
