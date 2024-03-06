@@ -136,7 +136,7 @@ export class AuthService {
     changePassword = async (res: Response, body: any): Promise<Response | any> => {
         try {
             // get new hash password
-            const password: string | void = await this.utils.doHash(body.password);
+            const password: string | void = await this.utils.encryptPassword(body.password);
             // get user data
             const user: any = await this.userService.getUserByToken(body.token);
             user.recovery_token = null
