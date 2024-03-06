@@ -1,9 +1,11 @@
+import { Utils } from '../utils/utils';
 import { check } from 'express-validator';
 import { UserService } from '../services/users.service';
 import { Request, Response, NextFunction } from 'express';
 import { handlerValidator } from '../utils/handler.validator';
 
 // instanciate all class neccesaries
+const utils = new Utils();
 const userService = new UserService();
 
 // build validator
@@ -131,8 +133,62 @@ const EmailValidator = [
     (req: Request, res: Response, next: NextFunction) => handlerValidator(req, res, next),
 ];
 
+const ChangePasswordValidator = [
+    check('password')
+        .exists()
+        .withMessage('Password is empty')
+        .isLength({ min: 8 })
+        .withMessage('Password must be at least 8 characters long')
+        .matches(/[A-Z]/)
+        .withMessage('Password must contain at least one uppercase letter')
+        .matches(/[a-z]/)
+        .withMessage('Password must contain at least one lowercase letter')
+        .matches(/\d/)
+        .withMessage('Password must contain at least one number')
+        .matches(/[$@#&!*-]/)
+        .withMessage('Password must contain at least one special character like $, @, #, &, - or !'),
+    check('confirmation_password')
+        .exists()
+        .withMessage('Password is empty')
+        .isLength({ min: 8 })
+        .withMessage('Password must be at least 8 characters long')
+        .matches(/[A-Z]/)
+        .withMessage('Password must contain at least one uppercase letter')
+        .matches(/[a-z]/)
+        .withMessage('Password must contain at least one lowercase letter')
+        .matches(/\d/)
+        .withMessage('Password must contain at least one number')
+        .matches(/[$@#&!*-]/)
+        .withMessage('Password must contain at least one special character like $, @, #, &, - or !')
+        .custom((val: string, { req }) => {
+            if (val !== req.body?.password) {
+                throw new Error('Password don´t match');
+            }
+            return true;
+        }),
+    check('token')
+        .exists()
+        .withMessage('Token is empty')
+        .custom(async (val: string) => {
+            const user = await userService.getUserByToken(val);
+            if (!user) {
+                throw new Error('Token is invalid');
+            }
+            return true;
+        })
+        .custom(async (val: string) => {
+            const isValid = await utils.verifyToken(val);
+            if (!isValid) {
+                throw new Error('Token expired');
+            }
+            return true;
+        }),
+    (req: Request, res: Response, next: NextFunction) => handlerValidator(req, res, next),
+];
+
 export {
     RegisterValidator,
     LoginValidator,
     EmailValidator,
+    ChangePasswordValidator,
 };

@@ -96,8 +96,9 @@ export class AuthService {
     }
 
     /**
-     * do login user
-     * @param {LoginInterface} loginData
+     * init and send email for change password
+     * @param { Response } res
+     * @param { any } body
      */
     recoveryPassword = async (res: Response, body: any): Promise<Response | any> => {
         try {
@@ -121,7 +122,28 @@ export class AuthService {
                 email,
             });
             // return data
-            return successResponse(res, {body}, 'Recovery email process initiated correctly');
+            return successResponse(res, { body }, 'Recovery email process initiated correctly. An email has been sent with instructions.');
+        } catch (error: any) {
+            throw error.message;  
+        }
+    }
+
+    /**
+     * do login user
+     * @param { Response } res
+     * @param { any } body
+     */
+    changePassword = async (res: Response, body: any): Promise<Response | any> => {
+        try {
+            // get new hash password
+            const password: string | void = await this.utils.doHash(body.password);
+            // get user data
+            const user: any = await this.userService.getUserByToken(body.token);
+            user.recovery_token = null
+            user.password = password;
+            user.save();
+            // return data
+            return successResponse(res, { user }, 'Password changed successfully.');
         } catch (error: any) {
             throw error.message;  
         }

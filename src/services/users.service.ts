@@ -227,4 +227,17 @@ export class UserService {
             }
         );
     }
+
+    /**
+     * get user by token
+     * @param { string } token
+     */
+    getUserByToken = async(token: string): Promise<User | boolean> => {
+        const user = await this.model.findOne({
+            recovery_token: token
+        });
+        if (user)
+            return user;
+        return false;
+    }
 }

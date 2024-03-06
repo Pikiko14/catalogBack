@@ -40,7 +40,7 @@ export class AuthController {
     }
 
     /**
-     * Do register user
+     * Do init change password of user
      * @param {Request} req
      * @param {Response} res
      */
@@ -48,6 +48,20 @@ export class AuthController {
         try {
             const body = matchedData(req); // get bodyd data formated correctly.
             await this.service.recoveryPassword(res, body); // do register user
+        } catch (error) {
+            return errorResponse(res, error, 'Error on login');
+        }
+    }
+
+    /**
+     * Do change password user
+     * @param {Request} req
+     * @param {Response} res
+     */
+    changePassword = async (req: Request, res: Response) => {
+        try {
+            const body = matchedData(req); // get bodyd data formated correctly.
+            await this.service.changePassword(res, body); // do register user
         } catch (error) {
             return errorResponse(res, error, 'Error on login');
         }
