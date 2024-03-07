@@ -14,6 +14,7 @@ export interface ProfileInterface {
     whatsapp_message?: string;
     user_id: mongoose.Schema.Types.ObjectId;
     subscription?: SubscriptionsInterface | null;
+    landing_banner?: string;
 }
 
 // Define el enum

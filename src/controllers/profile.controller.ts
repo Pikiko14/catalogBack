@@ -64,8 +64,9 @@ export class ProfileController {
     setConfigurationOnProfile = async (req: RequestExt, res: Response) => {
         try {
             const body: ProfileInterface = matchedData(req) as ProfileInterface;
+            const file = req.file;
             const { profile } = req.params;
-            await this.service.setConfigurationOnProfile(res, body, profile);
+            await this.service.setConfigurationOnProfile(res, body, profile, file as any);
         } catch (error) {
             return errorResponse(res, error, 'Error updating profile.');
         }

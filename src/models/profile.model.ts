@@ -56,6 +56,11 @@ const ProfileSchema = new Schema<ProfileInterface>(
             default: '<div>Hola, mi pedido de WhatsApp es el siguiente:</div><div><br></div><div>{{ order }}</div><div><br></div><div>por un monto total de: <b>{{ total }}</b></div><div><br></div><div>y mis datos son los siguientes:</div><div><br></div><div>{{ cliente }}<br></div>',
             nullable: true,
         },
+        landing_banner: {
+            type: String,
+            default: '',
+            nullable: true,
+        }
     },
     {
         timestamps: true,

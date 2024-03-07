@@ -157,7 +157,7 @@ export class ProfileService {
     /**
      * set configuration profile
      */
-    setConfigurationOnProfile = async (res: Response, body: ProfileInterface, profileId: string | ObjectId) =>{
+    setConfigurationOnProfile = async (res: Response, body: ProfileInterface, profileId: string | ObjectId, file: File) =>{
         try {
             // update configuration data
             const profile = await this.model.findOneAndUpdate(
@@ -174,6 +174,12 @@ export class ProfileService {
             // valdiate if profile exists
             if (!profile) {
                 return notFountResponse(res, profileId, 'Don´t exists profile with this ID.');
+            }
+            // if no is null file
+            if (file) {
+                const fileS3 = await this.s3Service.uploadSingleObject(file);
+                profile.landing_banner = fileS3;
+                await profile.save();
             }
             // return data
             return successResponse(res, profile, 'Profile configuration set successfully');

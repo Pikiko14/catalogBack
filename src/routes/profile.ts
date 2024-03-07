@@ -44,6 +44,8 @@ router.put(
     '/:profile/configuration/set',
     sessionCheck,
     perMissionMiddleware('update-profile'),
+    uploadS3.single('file'),
+    validateFileSize,
     validateProfileId,
     validateConfigurationData,
     profileController.setConfigurationOnProfile,
