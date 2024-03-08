@@ -441,6 +441,25 @@ const ProductArrayIdValidator = [
     (req: Request, res: Response, next: NextFunction) => handlerValidator(req, res, next),
 ];
 
+/**
+ * Validate product in exists
+ */
+const IdProductValidator = [
+    check('id')
+        .notEmpty()
+        .isMongoId()
+        .withMessage('products must be a valid id value')
+        .custom(async (val: string) => {
+            // validate if item in array is string
+            const issetProduct = await productService.getProductByIdOutUser(val);
+            if (!issetProduct) {
+                throw new Error(`Product id ${val} don´t exists on our record`);
+            }
+            return true;
+        }),
+    (req: Request, res: Response, next: NextFunction) => handlerValidator(req, res, next),
+];
+
 // validate references duplicates
 function validateDuplicates(arr: any) {
     const seenReferences = new Set();
@@ -467,6 +486,7 @@ async function deleteFiles(files: any) {
 export {
     ProductCreateValidator,
     validateDuplicates,
+    IdProductValidator,
     ProductUpdateValidator,
     ProductArrayIdValidator,
     ProductMediaDefaulValidator,

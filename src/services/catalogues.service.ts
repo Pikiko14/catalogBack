@@ -273,6 +273,7 @@ export class CatalogueService {
                 populate: {
                     path: 'images.buttons.product',
                     model: 'products',
+                    select: 'default_image.path _id name',
                 },
             });
             const profile = await this.profileService.getProfileByUserId(catalogue.user_id as any);

@@ -157,4 +157,19 @@ export class ProductsController {
             return errorResponse(res, error.message, 'Error product search');
         }
     }
+
+    /**
+     * show product by id
+     * @param req
+     * @param res
+     * @returns
+     */
+    showProductById = async (req: RequestExt, res: Response) => {
+        try {
+            const { id } = req.params;
+            await this.service.showProductById(res, id);
+        } catch (error: any) {
+            return errorResponse(res, error.message, 'Error show products');
+        }
+    }
 }

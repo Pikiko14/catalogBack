@@ -410,4 +410,26 @@ export class ProductsService {
             throw error;
         }
     }
+
+    /**
+     * show product by id
+     * @param res
+     * @param productId
+     * @returns
+     */
+    showProductById = async (res: Response, productId: string) => {
+        try {
+            const product = await this.model.findOne({ _id: productId });
+            if (!product) {
+                return errorResponse(
+                    res,
+                    { productId } ,
+                    'Product not found.'
+                );
+            }
+            return successResponse(res, product, 'Product show successfully');
+        } catch (error: any) {
+            return errorResponse(res, error.message, 'Error show products');
+        }
+    }
 }

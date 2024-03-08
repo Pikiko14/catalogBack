@@ -6,7 +6,7 @@ import subscriptionCheck from "../middlewares/subscription.middleware";
 import { ProductsController } from "../controllers/products.controller";
 import perMissionMiddleware from "../middlewares/permission.middleware";
 import parseBodyAttributesToJson from "../middlewares/parseBody.middleware";
-import { ProductArrayIdValidator, ProductCreateValidator, ProductMediaDefaulValidator, ProductUpdateValidator } from "../validators/products.validator";
+import { IdProductValidator, ProductArrayIdValidator, ProductCreateValidator, ProductMediaDefaulValidator, ProductUpdateValidator } from "../validators/products.validator";
 
 // init router
 const router = Router();
@@ -108,6 +108,15 @@ router.post(
 router.get(
     '/filter/front',
     controller.filterProducts,
+);
+
+/**
+ * show product data
+ */
+router.get(
+    '/:id/show',
+    IdProductValidator,
+    controller.showProductById,
 );
 
 // export router
