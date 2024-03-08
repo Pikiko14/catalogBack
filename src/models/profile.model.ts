@@ -60,6 +60,11 @@ const ProfileSchema = new Schema<ProfileInterface>(
             type: String,
             default: '',
             nullable: true,
+        },
+        rrss_link: {
+            type: Array,
+            default: [],
+            nullable: true
         }
     },
     {

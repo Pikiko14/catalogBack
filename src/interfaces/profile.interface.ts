@@ -15,6 +15,7 @@ export interface ProfileInterface {
     user_id: mongoose.Schema.Types.ObjectId;
     subscription?: SubscriptionsInterface | null;
     landing_banner?: string;
+    rrss_link?: string;
 }
 
 // Define el enum
