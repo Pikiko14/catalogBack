@@ -105,6 +105,15 @@ const validateConfigurationData = [
         .optional()
         .custom(isEnum)
         .withMessage(`Invalid enum value in characteristics methods field, available ${Object.values(TypeSlider)}.`),
+    check("rrss_link")
+        .optional()
+        .custom((val: any) => {
+            const array = JSON.parse(val);
+            if (typeof array !== 'object') {
+                throw new Error('RrSs link must be array');
+            }
+            return true;
+        }),
     (req: Request, res: Response, next: NextFunction) => handlerValidator(req, res, next),
 ];
 

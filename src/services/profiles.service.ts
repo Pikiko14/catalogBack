@@ -166,6 +166,7 @@ export class ProfileService {
                     whatsapp_message: body.whatsapp_message || null,
                     brand_color: body.brand_color || null,
                     type_slider: body.type_slider || null,
+                    rrss_link: body.rrss_link ? JSON.parse(body.rrss_link) : null
                 },
                 {
                     new: true,
