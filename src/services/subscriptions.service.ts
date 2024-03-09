@@ -42,6 +42,9 @@ export class SubscriptionService extends SubscriptionUsabilityService {
     createSubscription = async (res: Response, body: SubscriptionsInterface, user: User): Promise<any> => {
         try {
             const oldSubscription: SubscriptionsInterface | null = await this.getLastSubscription(user._id as string);
+            if (oldSubscription) {
+                await this.disableSubscription(oldSubscription._id as string);
+            }
             body.user_id = user._id as string;
             body.date_start = this.utils.getDate();
             body.date_end = this.utils.sumTimeToDate(body.date_start as Date, 'day', this.billingPeriodTime[body.billing_period]);
