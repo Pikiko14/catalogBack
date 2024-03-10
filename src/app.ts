@@ -22,7 +22,8 @@ const corsOptions = {
     'https://localhost:9001',
     'http://localhost:9001',
     'http://onex.host',
-    'http://catalogo.onex.host'
+    'http://catalogo.onex.host',
+    'http://admin.onex.host'
   ],
   methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
   credentials: true,
