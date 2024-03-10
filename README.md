@@ -32,6 +32,7 @@ Para instalar el proyecto en tu entorno producción, importante validar las url 
   cd catalogBack
   sudo npm install
   sudo mkdir uploads
+  cd uploads
   sudo mkdir catalogues
   sudo mkdir categories
   sudo mkdir images
