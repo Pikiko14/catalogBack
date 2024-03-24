@@ -1,23 +1,26 @@
 import { Response } from "express";
 import { Utils } from "../utils/utils";
+import RabbitMQService from "./RabbitMQService";
+import { S3Service } from "./aws/s3/s3.service";
 import { User } from "../interfaces/users.interface";
+import { CatalogueService } from "./catalogues.service";
 import CategoriesModel from "../models/categories.model";
+import { Catalogue } from "../interfaces/catalogues.interface";
 import { CategoryInterface } from "../interfaces/categories.interface";
 import { errorResponse, successResponse } from "../utils/api.responser";
-import { CatalogueService } from "./catalogues.service";
-import { Catalogue } from "../interfaces/catalogues.interface";
-import { S3Service } from "./aws/s3/s3.service";
 
 export class CategoriesService {
     utils: Utils;
     s3Service: S3Service;
     model: any = CategoriesModel;
     catalogueService: CatalogueService;
+    rabbitMQService: RabbitMQService;
 
     constructor () {
         this.utils = new Utils;
         this.s3Service = new S3Service();
         this.catalogueService = new CatalogueService();
+        this.rabbitMQService = new RabbitMQService("product_inventory");
     }
 
     /**
@@ -27,6 +30,7 @@ export class CategoriesService {
      */
     createCategories = async (res: Response, { body, user, file }:{ body: CategoryInterface, user: User, file: any }): Promise<CategoryInterface | void> => {
         try {
+            // save categories
             body.user_id = user.parent || user._id;
             const category = await this.model.create(body);
             if (file) {
@@ -34,6 +38,11 @@ export class CategoriesService {
                 category.image = fileS3;
             }
             await category.save();
+            // emit message to rabbitmq
+            await this.rabbitMQService.connect();
+            await this.rabbitMQService.sendMessage(category);
+            await this.rabbitMQService.close();
+            // return data
             return successResponse(res, category, 'Category created success');
         } catch (error: any) {
             return errorResponse(res, error, 'Error create categories');

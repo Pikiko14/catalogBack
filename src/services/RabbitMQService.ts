@@ -11,7 +11,7 @@ class RabbitMQService {
   }
 
   public async connect(): Promise<void> {
-    this.connection = await amqp.connect(`${process.env.RABIT_MQ_URL}`);
+    this.connection = await amqp.connect(`amqp://localhost`);
     this.channel = await this.connection.createChannel();
     await this.channel.assertQueue(this.queue, { durable: false });
   }
@@ -21,13 +21,13 @@ class RabbitMQService {
       throw new Error("No hay conexión establecida con RabbitMQ. Primero llama al método 'connect()'.");
     }
 
-    this.channel.sendToQueue(this.queue, Buffer.from(JSON.stringify(message)));
-    console.log(" [x] Sent '%s'", message);
+    const emit = await this.channel.sendToQueue(this.queue, Buffer.from(JSON.stringify(message)));
+    console.log(" [x] Sent '%s'", emit, message);
   }
 
   public async close(): Promise<void> {
-    if (this.connection) {
-      await this.connection.close();
+    if (this.channel) {
+      await this.channel.close();
     }
   }
 }
